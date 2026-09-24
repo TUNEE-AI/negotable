@@ -1,0 +1,20 @@
+{
+  "name": "negotable-mvp",
+  "version": "0.1.0",
+  "description": "NegoTable — AI 중개 협상테이블 (시장검증용 MVP)",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test tests/plumbing.test.js",
+    "test:live": "node tests/live-scenarios.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "multer": "^2.4.0"
+  }
+}

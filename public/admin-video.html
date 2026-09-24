@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NegoTable · 영상 관리</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root { --felt:#0f3d33; --paper:#edf0ea; --card:#fbfcf9; --line:#d2d9d1; --ink:#12211c; --ink-2:#3d504a; --brass:#c7a04a; --rust:#b24b36; --ok:#2c7a58; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: -apple-system, 'Pretendard Variable', 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif; line-height: 1.6; }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 40px 20px 80px; }
+  h1 { font-size: 1.4rem; font-weight: 800; letter-spacing: -.02em; color: var(--felt); }
+  .sub { color: var(--ink-2); font-size: 14px; margin-top: 4px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; margin-top: 22px; }
+  label { display: block; font-size: 13px; font-weight: 700; color: var(--ink-2); margin-bottom: 6px; }
+  input[type="text"], input[type="password"] { width: 100%; padding: 11px 13px; border: 1.5px solid var(--line); border-radius: 10px; font-size: 14px; outline: none; }
+  input:focus { border-color: var(--felt); }
+  .drop { margin-top: 14px; border: 2px dashed var(--line); border-radius: 14px; padding: 28px 16px; text-align: center; color: var(--ink-2); cursor: pointer; transition: border-color .15s, background .15s; }
+  .drop.over { border-color: var(--brass); background: #fbf6e6; }
+  .drop b { display: block; color: var(--ink); margin-bottom: 4px; }
+  .row { display: flex; gap: 10px; margin-top: 14px; }
+  button { font: inherit; cursor: pointer; border-radius: 999px; padding: 11px 18px; font-weight: 700; font-size: 14px; border: 1.5px solid transparent; }
+  .btn-brass { background: var(--brass); color: #1a1408; }
+  .btn-ghost { background: transparent; border-color: var(--line); color: var(--ink); }
+  .btn-danger { background: transparent; border-color: var(--rust); color: var(--rust); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .msg { margin-top: 12px; font-size: 13.5px; padding: 10px 12px; border-radius: 10px; }
+  .msg.ok { background: #eaf5ee; color: var(--ok); }
+  .msg.err { background: #fbf1ee; color: var(--rust); }
+  .preview { margin-top: 16px; }
+  .preview video { width: 100%; max-width: 240px; border-radius: 12px; display: block; background: #000; aspect-ratio: 2/3; object-fit: cover; }
+  .bar { height: 6px; background: var(--line); border-radius: 999px; overflow: hidden; margin-top: 12px; display: none; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .15s; }
+  .note { font-size: 12.5px; color: var(--ink-2); margin-top: 10px; }
+</style>
+</head>
+<body>
+<script src="/config.js"></script>
+<div class="wrap">
+  <h1>랜딩 페이지 영상 관리</h1>
+  <p class="sub">이 페이지는 검색·링크로 노출되지 않습니다. 관리자만 주소를 알고 있어야 합니다.</p>
+
+  <div class="card">
+    <label for="token">관리자 토큰</label>
+    <input id="token" type="password" placeholder="서버에 설정한 ADMIN_TOKEN" autocomplete="off">
+    <p class="note">서버 환경변수 <code>ADMIN_TOKEN</code>과 같은 값을 입력하세요. 이 브라우저에만 저장됩니다.</p>
+  </div>
+
+  <div class="card">
+    <label>현재 영상</label>
+    <div id="preview" class="preview"><p class="note">불러오는 중…</p></div>
+    <div class="row">
+      <button class="btn-ghost" id="btn-refresh" type="button">새로고침</button>
+      <button class="btn-danger" id="btn-remove" type="button" disabled>영상 삭제</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <label>새 영상 올리기 (mp4 / webm / mov, 최대 <span id="max-mb">80</span>MB)</label>
+    <div class="drop" id="drop">
+      <b>여기로 파일을 끌어다 놓거나 클릭해서 선택하세요</b>
+      <span>세로 영상(2:3 비율)을 추천합니다</span>
+      <input id="file" type="file" accept="video/mp4,video/webm,video/quicktime" hidden>
+    </div>
+    <div class="bar" id="bar"><i id="bar-fill"></i></div>
+    <div class="row">
+      <button class="btn-brass" id="btn-upload" type="button" disabled>업로드</button>
+      <span class="note" id="picked"></span>
+    </div>
+  </div>
+
+  <div id="msg"></div>
+  <p class="note">호스팅 서비스에 따라 서버가 재시작되면 올린 영상이 사라질 수 있습니다(무료 플랜 다수 해당). 그런 경우 배포할 때마다 다시 올려주세요.</p>
+</div>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const tokenEl = $('#token');
+  tokenEl.value = localStorage.getItem('negotable_admin_token') || '';
+  tokenEl.addEventListener('input', () => localStorage.setItem('negotable_admin_token', tokenEl.value));
+
+  let picked = null;
+  const msg = (text, kind) => { $('#msg').innerHTML = `<div class="msg ${kind}">${text}</div>`; };
+
+  function renderPreview(status) {
+    const box = $('#preview');
+    $('#btn-remove').disabled = !status.exists;
+    if (!status.exists) { box.innerHTML = '<p class="note">아직 올린 영상이 없습니다. "영상 준비 중" 안내가 대신 표시됩니다.</p>'; return; }
+    box.innerHTML = '';
+    const v = document.createElement('video');
+    v.src = status.url; v.controls = true; v.muted = true; v.playsInline = true;
+    box.appendChild(v);
+  }
+
+  async function api(path, opts = {}) {
+    const res = await fetch(path, { ...opts, headers: { ...(opts.headers || {}), 'x-admin-token': tokenEl.value } });
+    let data = null;
+    try { data = await res.json(); } catch {}
+    if (!res.ok) throw new Error(data?.error || '요청에 실패했어요.');
+    return data;
+  }
+
+  async function refresh() {
+    if (!tokenEl.value) { $('#preview').innerHTML = '<p class="note">토큰을 입력하면 현재 영상을 확인할 수 있어요.</p>'; return; }
+    try {
+      const status = await api('/api/admin/video');
+      renderPreview(status);
+    } catch (e) {
+      $('#preview').innerHTML = `<p class="note" style="color:var(--rust)">${e.message}</p>`;
+    }
+  }
+
+  $('#btn-refresh').addEventListener('click', refresh);
+
+  $('#btn-remove').addEventListener('click', async () => {
+    if (!confirm('현재 영상을 삭제할까요?')) return;
+    try {
+      await api('/api/admin/video', { method: 'DELETE' });
+      msg('삭제했어요.', 'ok');
+      refresh();
+    } catch (e) { msg(e.message, 'err'); }
+  });
+
+  const drop = $('#drop'), fileInput = $('#file');
+  drop.addEventListener('click', () => fileInput.click());
+  ['dragover', 'dragenter'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', (e) => setPicked(e.dataTransfer.files[0]));
+  fileInput.addEventListener('change', (e) => setPicked(e.target.files[0]));
+
+  function setPicked(file) {
+    if (!file) return;
+    picked = file;
+    $('#picked').textContent = `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)}MB`;
+    $('#btn-upload').disabled = false;
+  }
+
+  $('#btn-upload').addEventListener('click', () => {
+    if (!picked) return;
+    if (!tokenEl.value) return msg('관리자 토큰을 먼저 입력해주세요.', 'err');
+    const fd = new FormData();
+    fd.append('video', picked);
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/admin/video');
+    xhr.setRequestHeader('x-admin-token', tokenEl.value);
+    $('#bar').style.display = 'block';
+    xhr.upload.onprogress = (e) => { if (e.lengthComputable) $('#bar-fill').style.width = Math.round((e.loaded / e.total) * 100) + '%'; };
+    xhr.onload = () => {
+      $('#bar').style.display = 'none';
+      let data = {};
+      try { data = JSON.parse(xhr.responseText); } catch {}
+      if (xhr.status >= 200 && xhr.status < 300) {
+        msg('업로드했어요. 랜딩 페이지에 바로 반영됩니다.', 'ok');
+        picked = null; $('#picked').textContent = ''; $('#btn-upload').disabled = true; fileInput.value = '';
+        refresh();
+      } else {
+        msg(data.error || '업로드에 실패했어요.', 'err');
+      }
+    };
+    xhr.onerror = () => { $('#bar').style.display = 'none'; msg('네트워크 오류로 업로드에 실패했어요.', 'err'); };
+    xhr.send(fd);
+  });
+
+  refresh();
+  const cfg = window.NEGOTABLE_CONFIG || {};
+  if (cfg.maxVideoMb) $('#max-mb').textContent = cfg.maxVideoMb;
+})();
+</script>
+</body>
+</html>
