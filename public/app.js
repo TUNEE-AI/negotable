@@ -330,7 +330,9 @@
           h('div', { class: 'av' }, 'AI'),
           T.busy === 'items'
             ? h('div', { class: 'bubble' }, '협상 ITEM으로 나누고 있어요…')
-            : h('div', { class: 'bubble typing', 'aria-label': 'AI가 답을 쓰는 중' }, h('i'), h('i'), h('i')),
+            : T.slow
+              ? h('div', { class: 'bubble' }, '말씀하신 내용을 정리하고 있어요. 조금만 기다려주세요…')
+              : h('div', { class: 'bubble typing', 'aria-label': 'AI가 답을 쓰는 중' }, h('i'), h('i'), h('i')),
         ),
       );
     }
@@ -379,6 +381,14 @@
   async function runChat() {
     T.busy = 'chat';
     T.error = null;
+    T.slow = false;
+    // 오래 걸리면 점 세 개 대신 안내 문구를 보여준다(아무 반응 없이 기다리는 느낌을 줄이기 위해)
+    const slowTimer = setTimeout(() => {
+      if (T.busy === 'chat') {
+        T.slow = true;
+        renderLog();
+      }
+    }, 6000);
     renderLog();
     lockComposer(true);
     try {
@@ -401,6 +411,8 @@
     } catch (e) {
       T.error = { kind: 'chat', msg: e.message };
     } finally {
+      clearTimeout(slowTimer);
+      T.slow = false;
       if (T.busy === 'chat') T.busy = null;
       if (T.busy !== 'items') {
         renderLog();

@@ -249,6 +249,7 @@ test('LLM 클라이언트: 요청 형식(키 헤더·도구 강제)과 응답 �
   assert.equal(seen[1].key, 'k-test');
   assert.equal(seen[1].ver, '2023-06-01');
   assert.deepEqual(seen[1].body.tool_choice, { type: 'tool', name: 't' });
+  assert.equal(seen[1].body.system, 'sys'); // 상태 표시가 없는 짧은 프롬프트는 그대로
   assert.equal(seen[1].body.model, 'm-test');
   mock.closeAllConnections?.(); mock.close();
 });
@@ -376,6 +377,29 @@ test('health: 사용 중인 AI·버전·최근 대화 턴 소요 시간을 보�
   assert.ok(r.recentChats.length >= 1);
   assert.equal(typeof r.recentChats.at(-1).sec, 'number');
   assert.ok(!JSON.stringify(r).includes('비밀 내용'));
+  srv.close();
+});
+
+test('LLM 클라이언트: 시스템 프롬프트의 고정 앞부분만 캐시 표시한다', async () => {
+  const { cacheableSystem } = await import('../lib/llm.js');
+  const blocks = cacheableSystem('원칙\n<negotiation_state>\n{}\n</negotiation_state>');
+  assert.equal(blocks.length, 2);
+  assert.equal(blocks[0].text, '원칙\n');
+  assert.deepEqual(blocks[0].cache_control, { type: 'ephemeral' });
+  assert.equal(blocks[1].cache_control, undefined);
+  assert.ok(blocks[1].text.startsWith('<negotiation_state>'));
+});
+
+test('items/edit: 숨은 생각을 끈 채로 호출한다', async () => {
+  const seen = [];
+  const srv = await boot(async (req) => {
+    seen.push(req);
+    return { reply: 'ok', items: [{ title: 't', headline: 'h', request: 'r' }] };
+  });
+  await srv.post('/api/items', { messages: [{ role: 'user', content: '주차' }], state: goodState() });
+  await srv.post('/api/edit', { messages: [{ role: 'user', content: '주차' }], state: { ...goodState(), items: [{ id: 'a', title: 't', headline: 'h', request: 'r' }] }, instruction: '부드럽게' });
+  assert.equal(seen.length, 2);
+  assert.ok(seen.every((r) => r.noThinking === true));
   srv.close();
 });
 
