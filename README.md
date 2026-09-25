@@ -47,6 +47,7 @@ OPENROUTER_MODEL=openai/gpt-oss-120b:free   # 기본값. 다른 모델로 바꿔
 | 사용 모델 | `.env`의 `ANTHROPIC_MODEL` |
 | AI 제공사(무료 모델 등) | `.env`의 `LLM_PROVIDER`, `OPENROUTER_API_KEY`, `OPENROUTER_MODEL` |
 | 비용 보호 한도 | `.env`의 `RATE_LIMIT_PER_15MIN`, `DAILY_LLM_LIMIT` |
+| AI 응답 속도 관련 | `.env`의 `LLM_TIMEOUT_MS`(기본 60000), `GATE_RETRY_BUDGET_MS`(기본 20000), `OPENROUTER_REASONING_EFFORT`(기본 low). 서버 로그의 `[llm]`·`[chat]` 줄에 호출별 시간·토큰 수가 찍힙니다 |
 | 첫 인사말·플레이스홀더 | `public/app.js` 상단 상수 |
 | 색·글꼴·레이아웃 | `public/styles.css` 상단 `:root` 토큰 |
 | 화면 문구/구조 | `public/index.html` |

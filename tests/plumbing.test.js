@@ -293,6 +293,76 @@ test('게이트: 정리 확인(confirming) 단계에서는 적용되지 않는�
   srv.close();
 });
 
+test('게이트: 첫 응답이 시간 예산을 넘기면 재요청 없이 그대로 정리로 넘어간다(대기 시간 상한)', async () => {
+  process.env.GATE_RETRY_BUDGET_MS = '30';
+  let calls = 0;
+  const notAsked = { ...goodState().coverage, rationale: 'not_asked' };
+  const srv = await boot(async () => {
+    calls++;
+    await new Promise((r) => setTimeout(r, 60));
+    return { reply: '정리해볼게요.', next_action: 'summarize', state: goodState({ coverage: notAsked }) };
+  });
+  const r = await srv.post('/api/chat', { messages: [{ role: 'user', content: '이야기' }], state: emptyState(), phase: 'intake' });
+  delete process.env.GATE_RETRY_BUDGET_MS;
+  assert.equal(calls, 1);
+  assert.equal(r.body.action, 'summarize');
+  srv.close();
+});
+
+test('LLM 클라이언트: 시간 초과는 재시도하지 않는다(대기 시간이 두 배가 되지 않게)', async () => {
+  const http = await import('node:http');
+  const { createAnthropicLLM } = await import('../lib/llm.js');
+  let hits = 0;
+  const mock = http.createServer(() => { hits++; }); // 응답하지 않음 → 시간 초과
+  await new Promise((r) => mock.listen(0, r));
+  const llm = createAnthropicLLM({ apiKey: 'k', model: 'm', timeoutMs: 50, baseUrl: `http://127.0.0.1:${mock.address().port}` });
+  await assert.rejects(llm({ system: 's', messages: [{ role: 'user', content: 'hi' }], tool: { name: 't', input_schema: { type: 'object' } } }), /시간이 초과/);
+  assert.equal(hits, 1);
+  mock.closeAllConnections?.(); mock.close();
+});
+
+test('chat: AI가 바뀐 필드만 돌려줘도 이전 상태가 유지되고, 빈 값은 기존 내용을 지우지 않는다', async () => {
+  const srv = await boot(async () => ({
+    reply: '기간은 언제까지로 생각하세요?',
+    next_action: 'ask',
+    state: { rationale: ['구두로만 안내받음'], situation: '', issues: [], coverage: { rationale: 'known' } },
+  }));
+  const r = await srv.post('/api/chat', { messages: [{ role: 'user', content: '구두로만 들었어요' }], state: goodState(), phase: 'intake' });
+  assert.equal(r.status, 200);
+  assert.deepEqual(r.body.state.rationale, ['구두로만 안내받음']);
+  assert.equal(r.body.state.counterparty, '관리업체'); // 생략된 필드 유지
+  assert.equal(r.body.state.situation, goodState().situation); // 빈 값은 변경 없음
+  assert.deepEqual(r.body.state.issues, goodState().issues);
+  assert.equal(r.body.state.coverage.rationale, 'known');
+  assert.equal(r.body.state.coverage.counterparty, 'known'); // coverage도 부분 갱신
+  srv.close();
+});
+
+test('LLM 클라이언트: 대화 턴의 effort는 지원 모델에만 보낸다', async () => {
+  const http = await import('node:http');
+  const { createAnthropicLLM } = await import('../lib/llm.js');
+  const seen = [];
+  const mock = http.createServer((req, res) => {
+    let body = '';
+    req.on('data', (c) => (body += c));
+    req.on('end', () => {
+      seen.push(JSON.parse(body));
+      res.setHeader('content-type', 'application/json');
+      res.end(JSON.stringify({ content: [{ type: 'tool_use', name: 't', input: {} }] }));
+    });
+  });
+  await new Promise((r) => mock.listen(0, r));
+  const base = `http://127.0.0.1:${mock.address().port}`;
+  const req = { system: 's', messages: [{ role: 'user', content: 'hi' }], tool: { name: 't', input_schema: { type: 'object' } }, effort: 'low' };
+  await createAnthropicLLM({ apiKey: 'k', model: 'claude-sonnet-5', baseUrl: base })(req);
+  await createAnthropicLLM({ apiKey: 'k', model: 'claude-haiku-4-5', baseUrl: base })(req);
+  await createAnthropicLLM({ apiKey: 'k', model: 'claude-sonnet-5', baseUrl: base })({ ...req, effort: undefined });
+  assert.deepEqual(seen[0].output_config, { effort: 'low' });
+  assert.equal(seen[1].output_config, undefined);
+  assert.equal(seen[2].output_config, undefined); // ITEM 생성 등 effort 미지정 호출은 기본값 유지
+  mock.closeAllConnections?.(); mock.close();
+});
+
 test('items: kind(금액/기간/조건)가 보존되고 잘못된 값은 빈 값이 된다', async () => {
   const srv = await boot(async () => ({
     reply: 'ok',
@@ -418,6 +488,7 @@ test('OpenRouter 어댑터: 요청 형식(OpenAI 호환 tools)과 정상 응답 
   assert.equal(seen[0].messages[0].role, 'system');
   assert.deepEqual(seen[0].tool_choice, { type: 'function', function: { name: 't' } });
   assert.equal(seen[0].tools[0].function.name, 't');
+  assert.deepEqual(seen[0].reasoning, { effort: 'low' }); // 추론 모델의 숨은 생각 시간을 줄인다
   mock.closeAllConnections?.(); mock.close();
 });
 

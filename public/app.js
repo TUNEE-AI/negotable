@@ -106,7 +106,8 @@
   // ── 네트워크 ────────────────────────────────────────────────
   async function api(path, body) {
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 90_000);
+    // 서버 쪽 AI 호출 제한(60초)과 부가 호출을 감안해, 서버가 답하기 전에 브라우저가 먼저 끊지 않도록 여유를 둔다.
+    const timer = setTimeout(() => ctrl.abort(), 150_000);
     let res;
     try {
       res = await fetch(path, {
@@ -312,7 +313,7 @@
             h(
               'div',
               { class: 'summary-actions' },
-              h('button', { class: 'btn btn-ink btn-sm', type: 'button', onclick: () => sendUser('네, 이대로 진행해주세요.') }, '이대로 진행하기'),
+              h('button', { class: 'btn btn-ink btn-sm', type: 'button', onclick: proceedToItems }, '이대로 진행하기'),
               h('button', { class: 'btn btn-ghost btn-sm', type: 'button', onclick: () => { setPlaceholder(); input().focus(); } }, '고칠 부분이 있어요'),
             ),
           );
@@ -361,6 +362,18 @@
     track('chat_start');
     save();
     await runChat();
+  }
+
+  // "이대로 진행하기" 버튼: 동의가 명확하므로 AI에게 동의 여부를 묻는 대화 호출을 건너뛰고
+  // 바로 ITEM 생성으로 간다. (직접 "맞아요"라고 입력한 경우는 기존처럼 AI가 판단한다.)
+  async function proceedToItems() {
+    if (T.busy || S.phase !== 'confirming') return;
+    S.messages.push({ role: 'user', content: '네, 이대로 진행해주세요.', files: [] });
+    S.messages.push({ role: 'assistant', content: '좋아요, 협상 ITEM으로 나눠볼게요.', action: 'generate_items', summary: null });
+    S.phase = 'items';
+    save();
+    setPlaceholder();
+    await runItems();
   }
 
   async function runChat() {
