@@ -357,10 +357,26 @@ test('LLM 클라이언트: 대화 턴의 effort는 지원 모델에만 보낸다
   await createAnthropicLLM({ apiKey: 'k', model: 'claude-sonnet-5', baseUrl: base })(req);
   await createAnthropicLLM({ apiKey: 'k', model: 'claude-haiku-4-5', baseUrl: base })(req);
   await createAnthropicLLM({ apiKey: 'k', model: 'claude-sonnet-5', baseUrl: base })({ ...req, effort: undefined });
+  await createAnthropicLLM({ apiKey: 'k', model: 'claude-sonnet-5', baseUrl: base })({ ...req, noThinking: true });
+  await createAnthropicLLM({ apiKey: 'k', model: 'claude-fable-5-1', baseUrl: base })({ ...req, noThinking: true });
+  assert.deepEqual(seen[3].thinking, { type: 'disabled' }); // 숨은 생각 끄기
+  assert.equal(seen[4].thinking, undefined); // 끌 수 없는 모델에는 보내지 않음
+  assert.equal(seen[0].thinking, undefined);
   assert.deepEqual(seen[0].output_config, { effort: 'low' });
   assert.equal(seen[1].output_config, undefined);
   assert.equal(seen[2].output_config, undefined); // ITEM 생성 등 effort 미지정 호출은 기본값 유지
   mock.closeAllConnections?.(); mock.close();
+});
+
+test('health: 사용 중인 AI·버전·최근 대화 턴 소요 시간을 보여준다(대화 내용은 없음)', async () => {
+  const srv = await boot(async () => ({ reply: '네', next_action: 'ask', state: goodState() }));
+  await srv.post('/api/chat', { messages: [{ role: 'user', content: '비밀 내용' }], state: goodState(), phase: 'intake' });
+  const r = await fetch(srv.base + '/api/health').then((x) => x.json());
+  assert.equal(r.ok, true);
+  assert.ok(r.recentChats.length >= 1);
+  assert.equal(typeof r.recentChats.at(-1).sec, 'number');
+  assert.ok(!JSON.stringify(r).includes('비밀 내용'));
+  srv.close();
 });
 
 test('items: kind(금액/기간/조건)가 보존되고 잘못된 값은 빈 값이 된다', async () => {

@@ -3,7 +3,7 @@ import multer from 'multer';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { chatTurn, createItems, reviseItems } from './lib/negotiation.js';
+import { chatTurn, createItems, reviseItems, recentChatTimings } from './lib/negotiation.js';
 import { LLMError } from './lib/llm.js';
 import { createVideoStore, ALLOWED_MIME_TYPES } from './lib/video-store.js';
 
@@ -102,7 +102,16 @@ export function createApp({ llm, config, dataDir = path.join(__dirname, 'data') 
     }
   };
 
-  app.get('/api/health', (_, res) => res.json({ ok: true, model: config.model }));
+  // 상태 확인: 어떤 AI를 쓰는지, 어떤 코드 버전이 배포됐는지, 최근 대화 턴이 몇 초 걸렸는지(내용은 없음)
+  app.get('/api/health', (_, res) =>
+    res.json({
+      ok: true,
+      provider: config.llmProvider || 'anthropic',
+      model: config.llmProvider === 'openrouter' ? config.openrouterModel : config.model,
+      version: (process.env.RENDER_GIT_COMMIT || process.env.SOURCE_VERSION || '').slice(0, 7) || 'speed-v3',
+      recentChats: recentChatTimings(),
+    }),
+  );
   app.post('/api/chat', limiter, wrap((b) => chatTurn(llm, b)));
   app.post('/api/items', limiter, wrap((b) => createItems(llm, b)));
   app.post('/api/edit', limiter, wrap((b) => reviseItems(llm, b)));
