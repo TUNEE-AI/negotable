@@ -318,7 +318,7 @@ a { color: inherit; }
 .money-disc { margin-top: 10px; font-size: 13px; color: var(--mute); line-height: 1.7; max-width: 60em; }
 /* 제안 전달 과정 이미지 — "체험은 세 단계입니다" 바로 위, 화면 폭을 넓게 쓴다 */
 .send-flow { padding: clamp(40px, 6vw, 80px) clamp(12px, 3vw, 40px) 0; }
-.send-flow-fig { max-width: 1480px; margin: 0 auto; border-radius: clamp(10px, 1.4vw, 20px); overflow: hidden; background: var(--felt-deep); box-shadow: 0 24px 60px -24px rgba(11, 40, 34, .55); }
+.send-flow-fig { width: 100%; max-width: 1080px; margin: 0 auto; border-radius: clamp(10px, 1.4vw, 20px); overflow: hidden; background: var(--felt-deep); box-shadow: 0 24px 60px -24px rgba(11, 40, 34, .55); }
 .send-flow-fig img { display: block; width: 100%; height: auto; }
 .how { padding: clamp(56px, 8vw, 96px) clamp(20px, 4vw, 56px) clamp(64px, 9vw, 112px); max-width: 1320px; margin: 0 auto; }
 .how-title { font-size: clamp(1.4rem, 1rem + 1.4vw, 2rem); font-weight: 800; letter-spacing: -.03em; margin-bottom: 28px; }
