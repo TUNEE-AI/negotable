@@ -11,7 +11,7 @@
   const CFG = window.NEGOTABLE_CONFIG || {};
   const STORE_KEY = 'negotable.v2'; // 구조가 바뀌면 숫자를 올려 옛 저장본을 버린다
   const GREETING =
-    '상대방과 조정하거나 합의하고 싶은 상황을 편하게 설명해주세요. 정리해서 말씀하지 않아도 됩니다. 어떤 일이 있었고, 상대방에게 무엇을 요청하거나 제안하고 싶은지 자유롭게 이야기해주세요.';
+    '안녕하세요. 어떤 일 때문에 오셨어요? 누군가에게 말 꺼내기가 좀 난처한 상황인가요? 정리하지 않으셔도 괜찮으니 편하게 말씀해 주세요.';
   const CONFIRM_PLACEHOLDER = '맞으면 “맞아요”, 고칠 곳이 있으면 말씀해주세요.';
   const INTAKE_PLACEHOLDER = '상황을 편하게 적어주세요.';
   const ACTIONS = [

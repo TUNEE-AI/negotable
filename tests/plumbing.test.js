@@ -293,6 +293,39 @@ test('게이트: 정리 확인(confirming) 단계에서는 적용되지 않는�
   srv.close();
 });
 
+test('게이트: 재판단 결과 남은 항목이 모두 정리되면(해당 없음) 바로 정리 카드로 넘어간다', async () => {
+  let calls = 0;
+  const notAsked = { ...goodState().coverage, rationale: 'not_asked' };
+  const resolved = { ...goodState().coverage, rationale: 'not_applicable' };
+  const srv = await boot(async ({ system }) => {
+    calls++;
+    if (calls === 1) return { reply: '정리해볼게요.', next_action: 'summarize', state: goodState({ coverage: notAsked }) };
+    assert.match(system, /제안에 필요 없음이 분명하면 not_applicable/);
+    return { reply: '좋아요. 이제 상황이 어느 정도 정리됐네요.', next_action: 'summarize', state: goodState({ coverage: resolved }) };
+  });
+  const r = await srv.post('/api/chat', { messages: [{ role: 'user', content: '이야기' }], state: emptyState(), phase: 'intake' });
+  assert.equal(calls, 2);
+  assert.equal(r.body.action, 'summarize');
+  assert.equal(r.body.phase, 'confirming');
+  assert.equal(r.body.state.coverage.rationale, 'not_applicable');
+  srv.close();
+});
+
+test('프롬프트: AI 중개인 대화 원칙(판단 기준·한 번에 하나·짧은 공감·중립·사무적 표현 금지)이 들어 있다', () => {
+  const st = normalizeState({}, { items: [] });
+  const p = buildChatSystem({ state: st, phase: 'intake', userTurns: 1 });
+  assert.match(p, /구체적인 협상 제안을 쓸 수 있는가/);
+  assert.match(p, /질문은 한 번에 하나만/);
+  assert.match(p, /공감은 짧게/);
+  assert.match(p, /사용자의 편을 무조건 들지 않습니다/);
+  assert.match(p, /다음 항목을 입력해 주세요/); // 피해야 할 표현 목록
+  assert.match(p, /호기심성 질문/);
+  // 기존 확인 체크리스트(coverage) 항목은 그대로 유지된다
+  for (const k of ['counterparty', 'situation', 'issues', 'desiredOutcome', 'conditions', 'amount', 'period', 'rationale']) assert.ok(p.includes(k), k);
+  // 제안서 단계(ITEM 생성) 프롬프트에도 같은 원칙(PRINCIPLES)이 공유된다
+  assert.match(buildItemsSystem({ state: st }), /AI 중개인/);
+});
+
 test('items: kind(금액/기간/조건)가 보존되고 잘못된 값은 빈 값이 된다', async () => {
   const srv = await boot(async () => ({
     reply: 'ok',
