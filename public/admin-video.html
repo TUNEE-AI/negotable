@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NegoTable · 영상 관리</title>
+<title>두딜 · 영상 관리</title>
 <meta name="robots" content="noindex, nofollow">
 <style>
   :root { --felt:#0f3d33; --paper:#edf0ea; --card:#fbfcf9; --line:#d2d9d1; --ink:#12211c; --ink-2:#3d504a; --brass:#c7a04a; --rust:#b24b36; --ok:#2c7a58; }
@@ -78,8 +78,8 @@
 (() => {
   const $ = (s) => document.querySelector(s);
   const tokenEl = $('#token');
-  tokenEl.value = localStorage.getItem('negotable_admin_token') || '';
-  tokenEl.addEventListener('input', () => localStorage.setItem('negotable_admin_token', tokenEl.value));
+  tokenEl.value = localStorage.getItem('dodeal_admin_token') || '';
+  tokenEl.addEventListener('input', () => localStorage.setItem('dodeal_admin_token', tokenEl.value));
 
   let picked = null;
   const msg = (text, kind) => { $('#msg').innerHTML = `<div class="msg ${kind}">${text}</div>`; };
@@ -164,7 +164,7 @@
   });
 
   refresh();
-  const cfg = window.NEGOTABLE_CONFIG || {};
+  const cfg = window.DODEAL_CONFIG || {};
   if (cfg.maxVideoMb) $('#max-mb').textContent = cfg.maxVideoMb;
 })();
 </script>

@@ -40,4 +40,4 @@ if (cfg.llmProvider === 'openrouter') {
 const app = createApp({ llm, config: cfg });
 
 const port = Number(process.env.PORT || 3000);
-app.listen(port, () => console.log(`NegoTable → http://localhost:${port}`));
+app.listen(port, () => console.log(`두딜(DoDeal) → http://localhost:${port}`));

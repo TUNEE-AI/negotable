@@ -3,27 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>NegoTable · AI 중개 협상테이블</title>
+  <title>두딜 DoDeal · AI가 대신 정리해주는 협상</title>
   <meta name="description" content="사람과 싸우지 말고, 문제를 테이블에 올리세요. AI와 먼저 이야기하고 협상 가능한 항목으로 정리해보세요.">
-  <meta name="theme-color" content="#0C2A24">
+  <meta name="theme-color" content="#0732F0">
   <script>document.documentElement.classList.add("js")</script>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230C2A24'/%3E%3Crect x='6' y='11' width='20' height='10' rx='5' fill='%231D5E4E' stroke='%23C7A04A' stroke-width='1.5'/%3E%3Ccircle cx='16' cy='6.5' r='2.2' fill='%23C7A04A'/%3E%3Ccircle cx='16' cy='25.5' r='2.2' fill='%23C7A04A'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%230732F0'/%3E%3Ccircle cx='15' cy='17' r='8' fill='%23F7F6F2'/%3E%3Cpath d='M10.5 21.5 9 25l4.2-2.1' fill='%23F7F6F2'/%3E%3Ccircle cx='23.5' cy='9' r='3' fill='%2396D61A'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800;900&family=Black+Han+Sans&display=swap">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
 
 <!-- 공통 SVG 심볼 -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="logo" viewBox="0 0 32 32">
-    <rect x="5" y="11" width="22" height="10" rx="5" fill="currentColor" fill-opacity=".18" stroke="currentColor" stroke-width="1.6"/>
-    <circle cx="16" cy="5.8" r="2.4" fill="var(--brass)"/>
-    <circle cx="16" cy="26.2" r="2.4" fill="var(--brass)"/>
-  </symbol>
   <symbol id="i-shield" viewBox="0 0 20 20"><path d="M10 2 3.5 4.6v4.7c0 3.9 2.6 7.1 6.5 8.7 3.9-1.6 6.5-4.8 6.5-8.7V4.6L10 2Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="m7.2 10 2 2 3.6-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-send" viewBox="0 0 20 20"><path d="M3 10 17 3.5 13.2 16.5 9.6 11.4 3 10Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m9.6 11.4 3.4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
   <symbol id="i-check" viewBox="0 0 20 20"><path d="m4.5 10.5 3.6 3.6 7.4-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
@@ -40,38 +35,67 @@
 <section id="view-landing" class="view">
   <header class="land-bar" id="land-bar">
     <div class="land-bar-in">
-      <a class="brand brand-light" href="#/" aria-label="NegoTable 홈">
-        <svg class="brand-mark"><use href="#logo"/></svg>
-        <span class="brand-word">NegoTable</span>
-        <span class="brand-sub">AI 중개 협상테이블</span>
+      <a class="brand" href="#/" aria-label="두딜 홈">
+        <img class="brand-logo" src="/images/dodeal-logo.png" alt="두딜 DoDeal">
+        <span class="brand-sub">AI가 대신 정리해주는 협상</span>
       </a>
       <div class="lb-right">
-        <span class="badge-test">시장검증 테스트</span>
         <button class="btn btn-brass btn-sm lb-cta" id="cta-start-bar" type="button">시작하기</button>
       </div>
     </div>
   </header>
-  <div class="hero">
-    <img class="hero-bg" src="/images/hero-hands.jpg" alt="테이블을 사이에 두고 맞잡은 두 사람의 손" loading="eager">
-    <div class="hero-scrim" aria-hidden="true"></div>
-
+  <div class="hero hero-flat">
     <div class="hero-inner">
-      <h1><span class="ln"><span>난처한 상황에</span></span><br><span class="ln"><span>스트레스 받지 말고,</span></span><br><span class="ln"><span>문제를 <em class="mark">테이블에</em> 올리세요.</span></span></h1>
-      <div class="ask" aria-hidden="true">
-        <span class="ask-label">이렇게 편하게 말해도 됩니다</span>
-        <div class="ask-bubble"><span id="ask-text"></span><i class="caret"></i></div>
+      <div class="hero-split hero-split-v2">
+        <div class="hero-copy">
+          <h1 class="loud loud-en"><span class="ln"><span>Money.</span></span><br><span class="ln"><span>Hard to talk about?</span></span><br><span class="ln"><span>DO<em class="mark-dot">’</em>Deal.</span></span></h1>
+          <div class="ask" aria-hidden="true">
+            <span class="ask-label">이렇게 편하게 말해도 됩니다 👇</span>
+            <div class="ask-bubble"><span id="ask-text"></span><i class="caret"></i></div>
+          </div>
+          <div class="cta-row" style="position: relative;">
+            <button class="btn btn-brass btn-lg has-arrow" id="cta-start" type="button">지금 두딜해보기</button>
+            <button class="btn btn-ghost btn-lg has-play" id="cta-video" type="button"><svg class="ic"><use href="#i-play"/></svg>15초 영상 보기</button>
+            <span class="sparkle" style="left: -6px; top: -18px;" aria-hidden="true">✨</span>
+            <span class="sparkle s2" style="left: 44%; top: -22px;" aria-hidden="true">💬</span>
+            <span class="sparkle s3" style="right: 6%; top: -16px;" aria-hidden="true">✨</span>
+          </div>
+          <span class="cta-note">가입 없이 바로 · 약 5분</span>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <svg viewBox="0 0 420 460" class="whisper-art" role="img" aria-label="귓속말로 조용히 협상 이야기를 나누는 두 사람">
+            <!-- 뒷사람: 귀 기울이는 쪽 -->
+            <g>
+              <path d="M215 120c-58 0-96 44-96 100 0 34 14 60 34 84-6 20-18 34-32 44 26 6 50 0 66-12 12 6 26 10 40 10 58 0 100-46 100-108s-46-118-112-118z" fill="#0732F0"/>
+              <circle cx="150" cy="188" r="7" fill="#F7F6F2"/>
+            </g>
+            <!-- 앞사람: 귓속말하는 쪽 -->
+            <g>
+              <path d="M292 168c40-6 70 20 74 58 3 30-11 54-32 70 10 14 24 24 40 30-22 10-44 8-60-2-10 8-22 12-35 12-42 0-72-32-72-76 0-46 38-86 85-92z" fill="#96D61A"/>
+              <path d="M258 246c14-8 30-10 44-4" stroke="#12131C" stroke-width="6" stroke-linecap="round" fill="none"/>
+            </g>
+            <!-- 속삭임 라인 + 포인트 -->
+            <path d="M236 208c10-6 22-8 32-4" stroke="#0732F0" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 9" fill="none"/>
+            <circle cx="276" cy="198" r="8" fill="#0732F0"/>
+            <circle cx="276" cy="198" r="8" fill="none" stroke="#F7F6F2" stroke-width="2"/>
+          </svg>
+        </div>
       </div>
-      <div class="cta-row">
-        <button class="btn btn-brass btn-lg has-arrow" id="cta-start" type="button">내 협상테이블 만들어보기</button>
-        <button class="btn btn-ghost-light btn-lg has-play" id="cta-video" type="button"><svg class="ic"><use href="#i-play"/></svg>15초 영상 보기</button>
-      </div>
-      <span class="cta-note">가입 없이 바로 · 약 5분</span>
     </div>
   </div>
 
   <section class="ticker" aria-label="테이블에 올릴 수 있는 것들">
-    <p class="ticker-cap" data-rv>금액은 여러 조건 중 하나일 뿐입니다. NegoTable은 이 모두를 테이블에 올립니다.</p>
+    <p class="ticker-cap" data-rv>금액은 여러 조건 중 하나일 뿐입니다. 두딜은 이 모두를 테이블에 올립니다.</p>
     <div class="tk-mask"><div class="tk-track"><div class="tk-group"><span>금액</span><span>일정</span><span>기간</span><span>업무범위</span><span>역할</span><span>책임</span><span>권리</span><span>소유권</span><span>사용권</span><span>업무량</span><span>서비스 수준</span><span>보상</span><span>납기</span><span>인수인계</span><span>수정 횟수</span><span>지원 범위</span></div><div class="tk-group" aria-hidden="true"><span>금액</span><span>일정</span><span>기간</span><span>업무범위</span><span>역할</span><span>책임</span><span>권리</span><span>소유권</span><span>사용권</span><span>업무량</span><span>서비스 수준</span><span>보상</span><span>납기</span><span>인수인계</span><span>수정 횟수</span><span>지원 범위</span></div></div></div>
+  </section>
+
+  <section class="promo-blue" data-rv>
+    <div class="promo-photo"><img src="/images/hero-hands.jpg" alt="테이블을 사이에 두고 마주 앉은 두 사람의 손" loading="lazy"></div>
+    <div class="promo-body">
+      <h2>어디서든, 어떤 협상이든</h2>
+      <p>거래처와의 계약부터 이웃 간 갈등까지 — 말하기 애매한 순간마다 두딜이 대신 정리해드립니다.</p>
+      <button class="btn btn-ghost-light btn-lg has-arrow" id="cta-promo" type="button">지금 시작하기</button>
+    </div>
   </section>
 
   <section class="dilemma" id="dilemma" data-rv>
@@ -88,7 +112,7 @@
         </div>
       </div>
       <div class="dilemma-resolve">
-        <span class="dr-tag">그래서 NegoTable은</span>
+        <span class="dr-tag">그래서 두딜은</span>
         <p class="dr-main">사람보다 조건을 먼저 테이블에 올립니다.</p>
         <p class="dr-sub">부탁만 하면 부담이지만, <strong>돈을 걸면 정식 제안이 됩니다.</strong></p>
       </div>
@@ -98,7 +122,7 @@
   <section class="showreel" id="showreel" data-rv>
     <div class="showreel-inner">
       <div class="showreel-copy">
-        <h2>거절하기도 어렵고, 그냥 해주기는 싫고.</h2>
+        <h2>😮‍💨 거절하기도 어렵고, 그냥 해주기는 싫고.</h2>
         <p>관계는 지키고, 협상은 분명하고 품격 있게.</p>
       </div>
       <div class="showreel-frame" id="showreel-frame">
@@ -113,16 +137,17 @@
   <section class="split">
     <div class="split-inner">
       <div class="split-copy" data-rv>
-        <h2>하나의 협상,<br>여러 개의 합의.</h2>
-        <p>협상 전체를 한 번에 받아들이거나 거절하게 만들지 않습니다. 문제를 항목으로 나누면 상대방은 동의할 수 있는 것부터 답할 수 있고, 어려운 것만 따로 논의할 수 있습니다.</p>
+        <span class="ms-badge">🪜 마일스톤 방식</span>
+        <h2>🧩 하나의 협상,<br>여러 개의 마일스톤.</h2>
+        <p>협상 전체를 한 번에 합의하거나 결렬시키지 않습니다. 항목(마일스톤)으로 나누면, 정해진 순서 없이 합의되는 항목부터 그때그때 진행·지급할 수 있습니다. 어려운 항목만 따로 계속 논의하면 됩니다.</p>
       </div>
-      <div class="split-vis" id="split-vis" data-rv aria-hidden="true">
-        <div class="whole"><b>하나의 협상</b><span>한 덩어리의 문제</span></div>
-        <div class="branches">
-          <div class="bi"><span class="bl">금액</span><span class="pill p-accept">ACCEPT</span></div>
-          <div class="bi"><span class="bl">일정</span><span class="pill p-counter">COUNTER</span></div>
-          <div class="bi"><span class="bl">범위</span><span class="pill p-discuss">DISCUSS</span></div>
-          <div class="bi"><span class="bl">권리</span><span class="pill p-hold">HOLD</span></div>
+      <div class="milestone-vis" data-rv aria-hidden="true">
+        <p class="ms-caption">정해진 순서 없이, 항목마다 독립적으로 합의됩니다</p>
+        <div class="pay-vis" id="ms-pay-vis" data-rv>
+          <div class="pay-item"><span class="pay-circle"><span class="pay-mark">✓</span></span><b>금액</b><span class="pay-tag">합의 완료</span></div>
+          <div class="pay-item"><span class="pay-circle"><span class="pay-mark">✓</span></span><b>일정</b><span class="pay-tag">합의 완료</span></div>
+          <div class="pay-item"><span class="pay-circle"><span class="pay-mark">✓</span></span><b>범위</b><span class="pay-tag">합의 완료</span></div>
+          <div class="pay-item"><span class="pay-circle"><span class="pay-mark">✓</span></span><b>권리</b><span class="pay-tag">합의 완료</span></div>
         </div>
       </div>
     </div>
@@ -131,7 +156,7 @@
   <section class="money" id="money">
     <div class="money-inner">
       <div class="money-head" data-rv>
-        <h2>상대방에게 요구할 금전이 있다면,<br>이렇게 진행됩니다.</h2>
+        <h2>💸 상대방에게 요구할 금전이 있다면,<br>이렇게 진행됩니다.</h2>
         <span class="soon">정식 서비스 출시 예정</span>
       </div>
       <div class="flow-wrap">
@@ -174,34 +199,17 @@
     </div>
   </section>
 
-  <section class="send-flow" aria-label="제안이 상대방에게 전달되는 과정">
-    <figure class="send-flow-fig" data-rv>
-      <a href="/images/proposal-flow-v2.webp" target="_blank" rel="noopener"><img src="/images/proposal-flow-v2.webp" width="1672" height="941" loading="lazy" decoding="async"
-        alt="제안은 이렇게 전달됩니다. 1단계 카톡·이메일 알림: 제안이 도착하면 알림을 받습니다. 2단계 협상 초대장 확인: 누가 어떤 제안을 했는지 핵심만 보여줍니다. 3단계 자세한 제안서 확인: 제안 내용을 자세히 보고 조건을 검토합니다. 4단계 수락 시 에스크로 예치: 수락하면 제안 금액이 NegoTable 에스크로 계좌에 안전하게 예치됩니다."></a>
-    </figure>
-  </section>
-
-  <section class="how">
-    <h2 class="how-title" data-rv>체험은 세 단계입니다</h2>
-    <ol class="how-steps" data-rv>
-      <li><span class="n">1</span><h3>편하게 이야기하기</h3><p>정리해서 말하지 않아도 됩니다. 어떤 일이 있었고 무엇을 바라는지 자유롭게 적으세요.</p></li>
-      <li><span class="n">2</span><h3>협상 항목으로 다듬기</h3><p>AI가 이해한 내용을 확인하고, 만들어진 항목을 직접 또는 말로 고칩니다.</p></li>
-      <li><span class="n">3</span><h3>상대방 화면 확인하기</h3><p>상대방에게는 이런 협상테이블이 링크로 전달됩니다. 시뮬레이션으로 미리 봅니다.</p></li>
-    </ol>
-    <div class="how-cta" data-rv><button class="btn btn-ink btn-lg has-arrow" id="cta-start-2" type="button">내 협상테이블 만들어보기</button></div>
-  </section>
-
   <footer class="foot">
-    <p class="foot-privacy"><svg class="ic"><use href="#i-shield"/></svg>시장검증용 테스트입니다. 실제 회사명, 실명, 전화번호, 이메일, 계좌번호, 계약서 번호 등 개인정보·민감정보는 입력하지 마세요. 가명과 예시 정보를 사용해도 됩니다.</p>
-    <p class="foot-small">NegoTable은 아직 출시 전이며, 이 체험은 실제로 상대방에게 아무것도 전송하지 않습니다.</p>
+    <p class="foot-privacy"><svg class="ic"><use href="#i-shield"/></svg>실제 회사명, 실명, 전화번호, 이메일, 계좌번호, 계약서 번호 등 개인정보·민감정보는 입력하지 마세요. 가명과 예시 정보를 사용해도 됩니다.</p>
+    <p class="foot-small">두딜은 아직 출시 전이며, 이 체험은 실제로 상대방에게 아무것도 전송하지 않습니다.</p>
   </footer>
 </section>
 
 <!-- ═══════════════════ 2. AI 대화 ═══════════════════ -->
 <section id="view-chat" class="view" hidden>
   <header class="app-bar">
-    <a class="brand" href="#/" aria-label="NegoTable 홈">
-      <svg class="brand-mark"><use href="#logo"/></svg><span class="brand-word">NegoTable</span>
+    <a class="brand" href="#/" aria-label="두딜 홈">
+      <img class="brand-logo" src="/images/dodeal-logo.png" alt="두딜 DoDeal">
     </a>
     <nav class="stepper" aria-label="진행 단계"></nav>
     <button class="panel-toggle" id="panel-toggle" type="button" aria-expanded="false">테이블 <b id="panel-count">0</b></button>
@@ -209,19 +217,23 @@
 
   <div class="chat-shell">
     <div class="chat-main">
-      <div class="privacy" id="privacy"><svg class="ic"><use href="#i-shield"/></svg><span>시장검증용 테스트입니다. 실제 회사명, 실명, 전화번호, 이메일, 계좌번호, 계약서 번호 등 개인정보·민감정보는 입력하지 마세요. 가명과 예시 정보를 사용해도 됩니다.</span><button class="privacy-more" id="privacy-more" type="button" aria-expanded="false">더보기</button></div>
+      <div class="privacy" id="privacy"><svg class="ic"><use href="#i-shield"/></svg><span>실제 회사명, 실명, 전화번호, 이메일, 계좌번호, 계약서 번호 등 개인정보·민감정보는 입력하지 마세요. 가명과 예시 정보를 사용해도 됩니다.</span><button class="privacy-more" id="privacy-more" type="button" aria-expanded="false">더보기</button></div>
       <div id="chat-log" class="chat-log" role="log" aria-live="polite"></div>
       <ul class="file-list staged" id="staged" hidden aria-label="첨부 대기 파일"></ul>
       <form id="chat-form" class="composer" autocomplete="off">
         <label class="clip" title="근거 자료 등 파일 첨부" aria-label="파일 첨부"><svg class="ic"><use href="#i-clip"/></svg><input id="chat-file" type="file" multiple hidden></label>
-        <textarea id="chat-input" rows="1" maxlength="2000" placeholder="상황을 편하게 적어주세요." aria-label="메시지 입력"></textarea>
+        <div class="emoji-wrap">
+          <button class="emoji-btn" id="emoji-btn" type="button" aria-label="이모티콘 선택" aria-expanded="false">😊</button>
+          <div class="emoji-picker" id="emoji-picker" role="menu" hidden></div>
+        </div>
+        <textarea id="chat-input" rows="1" maxlength="2000" placeholder="상황을 편하게 적어주세요 🙂" aria-label="메시지 입력"></textarea>
         <button class="send" id="chat-send" type="submit" aria-label="보내기"><svg class="ic"><use href="#i-send"/></svg></button>
       </form>
     </div>
 
     <aside class="table-panel" id="table-panel" aria-label="AI가 이해한 협상 상태">
       <div class="tp-head">
-        <h2>테이블 위에 올라온 것</h2>
+        <h2>💬 지금까지 정리된 것</h2>
         <button class="tp-close" id="panel-close" type="button" aria-label="닫기">닫기</button>
       </div>
       <div id="panel-body" class="tp-body"></div>
@@ -232,8 +244,8 @@
 <!-- ═══════════════════ 3. ITEM 확인·수정 ═══════════════════ -->
 <section id="view-items" class="view" hidden>
   <header class="app-bar">
-    <a class="brand" href="#/" aria-label="NegoTable 홈">
-      <svg class="brand-mark"><use href="#logo"/></svg><span class="brand-word">NegoTable</span>
+    <a class="brand" href="#/" aria-label="두딜 홈">
+      <img class="brand-logo" src="/images/dodeal-logo.png" alt="두딜 DoDeal">
     </a>
     <nav class="stepper" aria-label="진행 단계"></nav>
     <span class="bar-spacer"></span>
@@ -258,6 +270,16 @@
       </div>
       <p class="prop-preview" id="prop-preview"></p>
     </section>
+
+    <section class="gift-section" id="gift-section" aria-label="쿠폰 선물">
+      <h2>🎁 쿠폰 선물 추가하기 <small>선택</small></h2>
+      <p class="gift-desc">스타벅스 같은 기프티콘을 제안에 함께 담아 상대방에게 선물할 수 있어요.</p>
+      <div class="gift-catalog" id="gift-catalog"></div>
+      <div class="gift-added" id="gift-added" hidden></div>
+      <p class="gift-total" id="gift-total" hidden></p>
+      <p class="gift-disc">※ 시뮬레이션입니다. 이번 체험에서는 실제 결제·발송이 이루어지지 않습니다.</p>
+    </section>
+
     <section class="tray" id="tray" hidden aria-label="대화에서 첨부한 파일"></section>
     <div id="items-list" class="items-list"></div>
     <div class="items-actions">
@@ -284,8 +306,8 @@
 <!-- ═══════════════════ 4. 상대방 Preview ═══════════════════ -->
 <section id="view-preview" class="view" hidden>
   <header class="app-bar no-print">
-    <a class="brand" href="#/" aria-label="NegoTable 홈">
-      <svg class="brand-mark"><use href="#logo"/></svg><span class="brand-word">NegoTable</span>
+    <a class="brand" href="#/" aria-label="두딜 홈">
+      <img class="brand-logo" src="/images/dodeal-logo.png" alt="두딜 DoDeal">
     </a>
     <nav class="stepper" aria-label="진행 단계"></nav>
     <span class="bar-spacer"></span>
@@ -300,12 +322,12 @@
     <article class="sheet" id="preview-sheet">
       <div class="sim-strip"><span>SIMULATION</span><span>SIMULATION</span><span>SIMULATION</span><span>SIMULATION</span></div>
       <header class="sheet-head">
-        <div class="sheet-brand"><svg class="brand-mark"><use href="#logo"/></svg><b>NegoTable</b></div>
+        <div class="sheet-brand"><img class="brand-logo" src="/images/dodeal-logo.png" alt="두딜 DoDeal"></div>
         <span class="stamp">SIMULATION</span>
       </header>
       <div class="sheet-body">
         <h1 class="sheet-title">협의 제안이 도착했습니다.</h1>
-        <p class="sim-note">“실제 NegoTable에서는 상대방이 아래와 같은 화면을 받게 됩니다.”</p>
+        <p class="sim-note">“실제 두딜에서는 상대방이 아래와 같은 화면을 받게 됩니다.”</p>
 
         <dl class="parties">
           <div><dt>받는 분</dt><dd id="pv-to">상대방</dd></div>
@@ -313,6 +335,10 @@
         </dl>
 
         <p class="lead" id="pv-lead"></p>
+        <div class="pv-gifts" id="pv-gifts" hidden>
+          <h3>🎁 함께 보내는 선물</h3>
+          <div class="gift-added gift-added-pv" id="pv-gift-list"></div>
+        </div>
         <div id="preview-items" class="pv-items"></div>
         <div class="pv-files" id="pv-files" hidden>
           <h3>공통 첨부 파일</h3>
@@ -335,7 +361,7 @@
       </ol>
       <div class="dl-demo">
         <div class="dl-left">
-          <div class="dl-linkbox"><svg class="ic"><use href="#i-link"/></svg><span id="dl-link">negotable.example/t/xxxxxx</span><button class="btn btn-ghost btn-sm" type="button" data-ch="copy">링크 복사</button></div>
+          <div class="dl-linkbox"><svg class="ic"><use href="#i-link"/></svg><span id="dl-link">dodeal.example/t/xxxxxx</span><button class="btn btn-ghost btn-sm" type="button" data-ch="copy">링크 복사</button></div>
           <p class="dl-cap">아래 방법으로 링크를 보내는 모습을 체험해보세요.</p>
           <div class="dl-channels">
             <button class="ch" type="button" data-ch="kakao"><svg class="ic"><use href="#i-chat"/></svg>카카오톡으로 보내기</button>
@@ -352,7 +378,7 @@
             <div class="phone-screen">
               <div class="pm-state pm-notif" id="pm-notif">
                 <span class="pm-bell">🔔</span>
-                <div class="pm-notif-text"><b>NegoTable</b><span>민수님이 협의 제안을 보냈어요</span></div>
+                <div class="pm-notif-text"><b>두딜</b><span>민수님이 협의 제안을 보냈어요</span></div>
               </div>
               <div class="pm-state pm-loading" id="pm-loading">
                 <span class="pm-ai">AI</span>
@@ -373,12 +399,12 @@
 
   <section class="finish no-print" id="finish">
     <div class="finish-inner">
-      <h2>NegoTable 체험이 완료되었습니다.</h2>
+      <h2>🎉 두딜 체험이 완료되었습니다.</h2>
       <p>이 화면을 캡처하거나 PDF로 저장해주세요.</p>
-      <p class="benefit">테스트 신청서에 결과물을 첨부한 참가자에게는 <b id="benefit-text">NegoTable 정식 서비스 출시 후 1년 무료 이용 혜택</b>을 제공합니다.</p>
+      <p class="benefit">결과물을 첨부해 신청해주신 분들께는 <b id="benefit-text">두딜 정식 서비스 출시 후 1년 무료 이용 혜택</b>을 드립니다.</p>
       <div class="cta-row">
         <button class="btn btn-ghost-light btn-lg" id="btn-pdf" type="button">PDF로 저장하기</button>
-        <a class="btn btn-brass btn-lg" id="btn-apply" href="#" target="_blank" rel="noopener">테스트 완료 신청하기</a>
+        <a class="btn btn-brass btn-lg" id="btn-apply" href="#" target="_blank" rel="noopener">신청하기</a>
       </div>
       <p class="hint">PDF 저장은 인쇄 창에서 ‘PDF로 저장’을 선택하세요. 휴대폰에서는 화면 캡처도 괜찮습니다.</p>
     </div>
@@ -386,7 +412,7 @@
 
   <section class="survey no-print" id="survey">
     <div class="survey-inner">
-      <h2>실제 협상 상황이 생긴다면 방금 만든 NegoTable을 상대방에게 보내고 싶습니까?</h2>
+      <h2>실제 협상 상황이 생긴다면 방금 만든 두딜을 상대방에게 보내고 싶습니까?</h2>
       <div class="opts" id="survey-opts" role="radiogroup" aria-label="사용 의향">
         <button type="button" role="radio" aria-checked="false" data-choice="now">바로 사용하고 싶다</button>
         <button type="button" role="radio" aria-checked="false" data-choice="depends">상황에 따라 사용하고 싶다</button>

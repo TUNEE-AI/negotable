@@ -37,11 +37,11 @@
 
     // ── 3) "이렇게 편하게 말해도 됩니다" 예시 문구가 타이핑되며 순환한다 ──
     const ASK_EXAMPLES = [
-      '고객사가 계약에 없던 기능을 계속 추가해달라고 해요…',
-      '퇴직했는데 계속 업무 질문이 와요…',
-      '동업을 정리하려는데 장비랑 고객을 어떻게 나눌지…',
-      '광고주가 영상을 계약보다 오래 쓰려고 해요…',
-      '아파트 주차 조건을 관리업체와 확실히 하고 싶어요',
+      '😮‍💨 고객사가 계약에 없던 기능을 계속 추가해달라고 해요…',
+      '📱 퇴직했는데 계속 업무 질문이 와요…',
+      '🤝 동업을 정리하려는데 장비랑 고객을 어떻게 나눌지…',
+      '🎬 광고주가 영상을 계약보다 오래 쓰려고 해요…',
+      '🚗 아파트 주차 조건을 관리업체와 확실히 하고 싶어요',
     ];
     const askEl = $('#ask-text');
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -74,17 +74,40 @@
     }
     runAskCycle();
 
-    // ── 4) "하나의 협상, 여러 개의 합의" 도식: 응답 상태가 천천히 순환 ──
-    const bis = $$('.split-vis .bi');
-    if (bis.length && !reduce) {
-      let k = 0;
-      setInterval(() => {
-        bis.forEach((b) => b.classList.remove('active'));
-        bis[k % bis.length].classList.add('active');
-        k++;
-      }, 1400);
-    } else {
-      bis.forEach((b) => b.classList.add('active'));
+    // ── 4) "하나의 협상, 여러 마일스톤" 도식: 항목이 정해진 순서 없이 각자 합의되는 모습 ──
+    const msPayItems = $$('#ms-pay-vis .pay-item');
+    if (msPayItems.length) {
+      if (reduce) {
+        msPayItems.forEach((it) => it.classList.add('done'));
+      } else {
+        const shuffle = (arr) => {
+          const a = arr.slice();
+          for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+          }
+          return a;
+        };
+        const cycle = () => {
+          const order = shuffle(msPayItems);
+          order.forEach((it, idx) => setTimeout(() => it.classList.add('done'), idx * 700 + 200));
+          setTimeout(() => {
+            msPayItems.forEach((it) => it.classList.remove('done'));
+            setTimeout(cycle, 600);
+          }, order.length * 700 + 2200);
+        };
+        const io1 = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (!e.isIntersecting) continue;
+              cycle();
+              io1.disconnect();
+            }
+          },
+          { threshold: 0.3 },
+        );
+        io1.observe($('#ms-pay-vis'));
+      }
     }
 
     // ── 5) 금액 처리 흐름: 순서대로 살짝 강조 + 동전이 흐르다 에스크로에서 머무는 연출 ──

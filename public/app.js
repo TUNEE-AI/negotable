@@ -1,5 +1,5 @@
 /* ─────────────────────────────────────────────────────────────
-   NegoTable 프런트엔드 (빌드 도구 없는 순수 JS)
+   두딜(DoDeal) 프런트엔드 (빌드 도구 없는 순수 JS)
    흐름: 랜딩 → AI 대화 → 이해한 내용 확인 → ITEM 확인·수정 → 상대방 Preview → 완료/설문
    - AI 호출은 모두 서버(/api/*)를 거칩니다. 이 파일에는 API 키가 없습니다.
    - negotiationState 는 여기(S.state)에 들고 있다가 매 요청에 함께 보냅니다.
@@ -8,12 +8,17 @@
 (() => {
   'use strict';
 
-  const CFG = window.NEGOTABLE_CONFIG || {};
-  const STORE_KEY = 'negotable.v2'; // 구조가 바뀌면 숫자를 올려 옛 저장본을 버린다
+  const CFG = window.DODEAL_CONFIG || {};
+  const STORE_KEY = 'dodeal.v1'; // 구조가 바뀌면 숫자를 올려 옛 저장본을 버린다
   const GREETING =
     '상대방과 조정하거나 합의하고 싶은 상황을 편하게 설명해주세요. 정리해서 말씀하지 않아도 됩니다. 어떤 일이 있었고, 상대방에게 무엇을 요청하거나 제안하고 싶은지 자유롭게 이야기해주세요.';
   const CONFIRM_PLACEHOLDER = '맞으면 “맞아요”, 고칠 곳이 있으면 말씀해주세요.';
   const INTAKE_PLACEHOLDER = '상황을 편하게 적어주세요.';
+  const EMOJIS = [
+    '😊', '😅', '😂', '🥲', '😮‍💨', '😭', '😡', '🥹', '🙏', '👍', '👎', '👏',
+    '🤝', '🤔', '💬', '💰', '📅', '📎', '✅', '❌', '⏰', '😮', '👋', '🎉',
+    '💪', '🙌', '😳', '🚗', '🏠', '📱', '💼', '📝', '⚖️', '🔥', '💡', '❤️',
+  ];
   const ACTIONS = [
     ['accept', 'ACCEPT', '수락'],
     ['counter', 'COUNTER', '역제안'],
@@ -84,6 +89,7 @@
     files: [], // 첨부(근거 자료): {id, name, size, itemId|null}. 파일 이름·크기만 저장하며 내용은 저장/전송하지 않음
     tracked: [],
     survey: null,
+    gifts: [], // 제안에 함께 담는 쿠폰 선물: {id, catId, brand, label, amount, emoji}
   });
   let S = load() || fresh();
   // 저장하지 않는 일시 상태
@@ -106,8 +112,7 @@
   // ── 네트워크 ────────────────────────────────────────────────
   async function api(path, body) {
     const ctrl = new AbortController();
-    // 서버 쪽 AI 호출 제한(60초)과 부가 호출을 감안해, 서버가 답하기 전에 브라우저가 먼저 끊지 않도록 여유를 둔다.
-    const timer = setTimeout(() => ctrl.abort(), 150_000);
+    const timer = setTimeout(() => ctrl.abort(), 90_000);
     let res;
     try {
       res = await fetch(path, {
@@ -313,13 +318,13 @@
             h(
               'div',
               { class: 'summary-actions' },
-              h('button', { class: 'btn btn-ink btn-sm', type: 'button', onclick: proceedToItems }, '이대로 진행하기'),
+              h('button', { class: 'btn btn-ink btn-sm', type: 'button', onclick: () => sendUser('네, 이대로 진행해주세요.') }, '이대로 진행하기'),
               h('button', { class: 'btn btn-ghost btn-sm', type: 'button', onclick: () => { setPlaceholder(); input().focus(); } }, '고칠 부분이 있어요'),
             ),
           );
         }
       }
-      el.append(h('div', { class: 'msg ai' }, h('div', { class: 'av' }, 'AI'), stack));
+      el.append(h('div', { class: 'msg ai' }, h('div', { class: 'av' }, '🤖'), stack));
     });
 
     if (T.busy) {
@@ -327,12 +332,10 @@
         h(
           'div',
           { class: 'msg ai' },
-          h('div', { class: 'av' }, 'AI'),
+          h('div', { class: 'av' }, '🤖'),
           T.busy === 'items'
             ? h('div', { class: 'bubble' }, '협상 ITEM으로 나누고 있어요…')
-            : T.slow
-              ? h('div', { class: 'bubble' }, '말씀하신 내용을 정리하고 있어요. 조금만 기다려주세요…')
-              : h('div', { class: 'bubble typing', 'aria-label': 'AI가 답을 쓰는 중' }, h('i'), h('i'), h('i')),
+            : h('div', { class: 'bubble typing', 'aria-label': 'AI가 답을 쓰는 중' }, h('i'), h('i'), h('i')),
         ),
       );
     }
@@ -341,7 +344,7 @@
         h(
           'div',
           { class: 'msg ai err' },
-          h('div', { class: 'av' }, 'AI'),
+          h('div', { class: 'av' }, '🤖'),
           h(
             'div',
             { class: 'bubble' },
@@ -366,29 +369,9 @@
     await runChat();
   }
 
-  // "이대로 진행하기" 버튼: 동의가 명확하므로 AI에게 동의 여부를 묻는 대화 호출을 건너뛰고
-  // 바로 ITEM 생성으로 간다. (직접 "맞아요"라고 입력한 경우는 기존처럼 AI가 판단한다.)
-  async function proceedToItems() {
-    if (T.busy || S.phase !== 'confirming') return;
-    S.messages.push({ role: 'user', content: '네, 이대로 진행해주세요.', files: [] });
-    S.messages.push({ role: 'assistant', content: '좋아요, 협상 ITEM으로 나눠볼게요.', action: 'generate_items', summary: null });
-    S.phase = 'items';
-    save();
-    setPlaceholder();
-    await runItems();
-  }
-
   async function runChat() {
     T.busy = 'chat';
     T.error = null;
-    T.slow = false;
-    // 오래 걸리면 점 세 개 대신 안내 문구를 보여준다(아무 반응 없이 기다리는 느낌을 줄이기 위해)
-    const slowTimer = setTimeout(() => {
-      if (T.busy === 'chat') {
-        T.slow = true;
-        renderLog();
-      }
-    }, 6000);
     renderLog();
     lockComposer(true);
     try {
@@ -411,8 +394,6 @@
     } catch (e) {
       T.error = { kind: 'chat', msg: e.message };
     } finally {
-      clearTimeout(slowTimer);
-      T.slow = false;
       if (T.busy === 'chat') T.busy = null;
       if (T.busy !== 'items') {
         renderLog();
@@ -519,6 +500,68 @@
   const toName = () => prop().to.trim() || S.state.counterparty || '상대방';
   const fromName = () => prop().from.trim() || '제안자 (가명)';
 
+  // ── 쿠폰 선물 ────────────────────────────────────────────────
+  // 실제 결제·발송은 이루어지지 않는 시뮬레이션 카탈로그입니다.
+  const GIFT_CATALOG = [
+    { id: 'starbucks', brand: '스타벅스', label: '아메리카노 T', amount: 5000, emoji: '☕' },
+    { id: 'baemin', brand: '배달의민족', label: '배달상품권', amount: 10000, emoji: '🍔' },
+    { id: 'cultureland', brand: '컬쳐랜드', label: '문화상품권', amount: 10000, emoji: '🎟️' },
+    { id: 'emart', brand: '이마트', label: '모바일상품권', amount: 10000, emoji: '🛒' },
+    { id: 'cgv', brand: 'CGV', label: '영화관람권', amount: 15000, emoji: '🎬' },
+    { id: 'gs25', brand: 'GS25', label: '모바일상품권', amount: 5000, emoji: '🏪' },
+  ];
+  const gifts = () => (S.gifts = S.gifts || []);
+  const giftsTotal = () => gifts().reduce((sum, g) => sum + g.amount, 0);
+  function addGift(catId) {
+    const cat = GIFT_CATALOG.find((c) => c.id === catId);
+    if (!cat) return;
+    gifts().push({ id: newId(), catId: cat.id, brand: cat.brand, label: cat.label, amount: cat.amount, emoji: cat.emoji });
+    save();
+    renderGifts();
+  }
+  function removeGift(id) {
+    S.gifts = gifts().filter((g) => g.id !== id);
+    save();
+    renderGifts();
+  }
+  function renderGifts() {
+    const catalogEl = $('#gift-catalog');
+    const addedEl = $('#gift-added');
+    const totalEl = $('#gift-total');
+    if (!catalogEl) return;
+    if (!catalogEl.childElementCount) {
+      catalogEl.replaceChildren(
+        ...GIFT_CATALOG.map((c) =>
+          h(
+            'button',
+            { type: 'button', class: 'gift-card', onclick: () => addGift(c.id) },
+            h('span', { class: 'gift-emoji' }, c.emoji),
+            h('span', { class: 'gift-brand' }, c.brand),
+            h('span', { class: 'gift-label' }, c.label),
+            h('span', { class: 'gift-amount' }, c.amount.toLocaleString() + '원'),
+            h('span', { class: 'gift-add' }, '+ 담기'),
+          ),
+        ),
+      );
+    }
+    const list = gifts();
+    addedEl.hidden = list.length === 0;
+    addedEl.replaceChildren(
+      ...list.map((g) =>
+        h(
+          'span',
+          { class: 'gift-chip' },
+          h('span', {}, g.emoji + ' ' + g.brand + ' ' + g.label + ' · ' + g.amount.toLocaleString() + '원'),
+          h('button', { type: 'button', 'aria-label': '선물 삭제', onclick: () => removeGift(g.id) }, '×'),
+        ),
+      ),
+    );
+    if (totalEl) {
+      totalEl.hidden = list.length === 0;
+      totalEl.textContent = list.length ? `총 ${list.length}개 · ${giftsTotal().toLocaleString()}원 상당의 선물이 제안과 함께 전달됩니다.` : '';
+    }
+  }
+
   function renderProposal() {
     if (document.activeElement !== $('#pp-to')) $('#pp-to').value = prop().to || S.state.counterparty || '';
     if (document.activeElement !== $('#pp-from')) $('#pp-from').value = prop().from;
@@ -540,13 +583,14 @@
     renderProposal();
     renderNote();
     renderItems();
+    renderGifts();
   }
 
   function renderNote() {
     const el = $('#ai-note');
     if (!S.itemsNote) return void (el.hidden = true);
     el.hidden = false;
-    el.replaceChildren(h('div', { class: 'av' }, 'AI'), h('p', {}, S.itemsNote));
+    el.replaceChildren(h('div', { class: 'av' }, '🤖'), h('p', {}, S.itemsNote));
   }
 
   function itemAttach(it) {
@@ -774,6 +818,14 @@
     $('#pv-files').hidden = common.length === 0;
     $('#pv-file-list').replaceChildren(...common.map((f) => fileRow(f)));
     $('#pv-lead').textContent = `제안자가 ${arr.length}개의 항목에 대해 협의를 요청했습니다. 항목마다 따로 응답할 수 있어요.`;
+    const giftList = gifts();
+    const pvGifts = $('#pv-gifts');
+    if (pvGifts) {
+      pvGifts.hidden = giftList.length === 0;
+      $('#pv-gift-list').replaceChildren(
+        ...giftList.map((g) => h('span', { class: 'gift-chip' }, g.emoji + ' ' + g.brand + ' ' + g.label + ' · ' + g.amount.toLocaleString() + '원')),
+      );
+    }
     const box = $('#preview-items');
     box.replaceChildren();
     arr.forEach((it, i) => {
@@ -826,13 +878,13 @@
     renderTally();
 
     // 링크 전달 안내(시뮬레이션): 제안자 이름과 예시 링크로 "상대방이 받는 메시지"를 보여준다
-    const link = 'negotable.example/t/' + S.sid.replace(/^s_/, '').slice(0, 6);
+    const link = 'dodeal.example/t/' + S.sid.replace(/^s_/, '').slice(0, 6);
     $('#dl-link').textContent = link;
     $('#dl-url').textContent = 'https://' + link;
     const who = prop().from.trim() || '제안자';
-    $('#dl-msg').textContent = `${who}님이 NegoTable로 협의 제안을 보냈어요.\n아래 링크에서 항목별로 확인하고 응답해주세요.`;
+    $('#dl-msg').textContent = `${who}님이 두딜로 협의 제안을 보냈어요.\n아래 링크에서 항목별로 확인하고 응답해주세요.`;
 
-    $('#benefit-text').textContent = CFG.benefitText || 'NegoTable 정식 서비스 출시 후 1년 무료 이용 혜택';
+    $('#benefit-text').textContent = CFG.benefitText || '두딜 정식 서비스 출시 후 1년 무료 이용 혜택';
     const apply = $('#btn-apply');
     if (CFG.applyUrl) apply.href = CFG.applyUrl;
     else apply.removeAttribute('href');
@@ -908,6 +960,33 @@
     el.style.height = Math.min(el.scrollHeight, 168) + 'px';
   }
 
+  // 이모티콘 선택기: 버튼을 누르면 그리드가 뜨고, 고르면 커서 위치에 삽입한다.
+  function setEmojiPicker(open) {
+    const picker = $('#emoji-picker');
+    const btn = $('#emoji-btn');
+    if (!picker || !btn) return;
+    picker.hidden = !open;
+    btn.classList.toggle('on', open);
+    btn.setAttribute('aria-expanded', String(open));
+    if (open && !picker.childElementCount) {
+      picker.replaceChildren(
+        ...EMOJIS.map((em) =>
+          h('button', { type: 'button', role: 'menuitem', 'aria-label': em, onclick: () => insertEmoji(em) }, em),
+        ),
+      );
+    }
+  }
+  function insertEmoji(em) {
+    const el = input();
+    const start = el.selectionStart ?? el.value.length;
+    const end = el.selectionEnd ?? el.value.length;
+    el.value = el.value.slice(0, start) + em + el.value.slice(end);
+    const pos = start + em.length;
+    el.focus();
+    el.setSelectionRange(pos, pos);
+    autosize();
+  }
+
   // 랜딩 페이지 15초 영상: 직접 올린 파일이 있으면 그걸 먼저 보여주고, 없으면 유튜브 ID(설정된 경우)를 쓴다.
   // 관리자가 영상을 올리는 방법: /admin-video.html (README 참고)
   //
@@ -941,7 +1020,7 @@
     frame.appendChild(
       h('iframe', {
         src: `https://www.youtube-nocookie.com/embed/${encodeURIComponent(CFG.demoVideoId)}?rel=0&modestbranding=1`,
-        title: 'NegoTable 소개 영상',
+        title: '두딜 소개 영상',
         loading: 'lazy',
         allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
         allowfullscreen: true,
@@ -952,7 +1031,7 @@
   function init() {
     mountShowreel();
     $('#cta-start').addEventListener('click', startChat);
-    $('#cta-start-2').addEventListener('click', startChat);
+    $('#cta-promo')?.addEventListener('click', startChat);
     $('#cta-video')?.addEventListener('click', () => $('#showreel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
 
     // 대화 입력: 한글 조합 중 Enter는 전송하지 않음, 모바일은 Enter=줄바꿈
@@ -968,6 +1047,14 @@
       T.staged.push(...pickFiles(e.target.files, T.staged.length));
       e.target.value = '';
       renderStaged();
+    });
+    $('#emoji-btn')?.addEventListener('click', () => setEmojiPicker($('#emoji-picker').hidden));
+    document.addEventListener('click', (e) => {
+      if (!$('#emoji-picker') || $('#emoji-picker').hidden) return;
+      if (!e.target.closest('.emoji-wrap')) setEmojiPicker(false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && $('#emoji-picker') && !$('#emoji-picker').hidden) setEmojiPicker(false);
     });
     input().addEventListener('input', autosize);
     input().addEventListener('keydown', (e) => {
@@ -1023,7 +1110,7 @@
       if (!CFG.applyUrl) {
         e.preventDefault();
         toast('신청 페이지를 준비 중이에요. 곧 열릴 예정입니다.');
-        console.warn('[NegoTable] applyUrl 이 설정되지 않았습니다. config.js 또는 환경변수 APPLY_URL 을 설정하세요.');
+        console.warn('[DoDeal] applyUrl 이 설정되지 않았습니다. config.js 또는 환경변수 APPLY_URL 을 설정하세요.');
       }
     });
     $('#survey-opts').addEventListener('click', async (e) => {
