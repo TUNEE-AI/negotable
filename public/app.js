@@ -270,6 +270,8 @@
     renderLog(true);
     renderPanel(false);
     setPlaceholder();
+    // 모바일에서도 "지금까지 정리된 것" 패널을 매번 눌러서 열지 않도록 기본으로 고정해서 보여준다
+    if (matchMedia('(max-width: 900px)').matches) togglePanel(true);
     if (!isCoarse) input().focus({ preventScroll: true });
   }
 
