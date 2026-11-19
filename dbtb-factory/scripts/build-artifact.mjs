@@ -12,7 +12,7 @@ fs.mkdirSync(path.join(out, 'local'), { recursive: true });
 
 for (const f of ['api.js', 'catalog.js', 'engine.js', 'status.js', 'util.js', 'books.js']) fs.copyFileSync(path.join(root, 'lib', f), path.join(out, 'lib', f));
 for (const f of fs.readdirSync(path.join(root, 'artifact', 'local'))) fs.copyFileSync(path.join(root, 'artifact', 'local', f), path.join(out, 'local', f));
-fs.copyFileSync(path.join(root, 'public', 'app.js'), path.join(out, 'app.js'));
+for (const f of ['app.js', 'wall.js']) fs.copyFileSync(path.join(root, 'public', f), path.join(out, f));
 fs.mkdirSync(path.join(out, 'images'), { recursive: true });
 for (const f of fs.readdirSync(path.join(root, 'public', 'images'))) if (f.endsWith('.webp')) fs.copyFileSync(path.join(root, 'public', 'images', f), path.join(out, 'images', f));
 

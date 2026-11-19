@@ -2,6 +2,8 @@
 // DBTB FACTORY — 프론트엔드 (의존성 없는 바닐라 JS SPA, 해시 라우팅)
 // ─────────────────────────────────────────────────────────────
 
+import { paintWall } from './wall.js';
+
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -257,9 +259,9 @@ function renderGate(app) {
   app.innerHTML = `
   <main id="main">
     <section class="brand-wall" aria-labelledby="brand-title">
-      <h1 id="brand-title" class="paint"><span>DON'T BUY</span> <span>THE BOOK</span></h1>
-      <p class="paint sub">BRAIN FACTORY</p>
-      <p class="lead">책 한 권을 정답으로 믿지 마세요.<br />책은 새로운 질문의 시작입니다.</p>
+      <canvas id="wall" aria-hidden="true"></canvas>
+      <h1 id="brand-title" class="sr-only">DON'T BUY THE BOOK — BRAIN FACTORY</h1>
+      <p class="sr-only">책 한 권을 정답으로 믿지 마세요. 책은 새로운 질문의 시작입니다.</p>
     </section>
     <section class="gate" aria-label="공장 정문">
       <div class="backdrop" style="background-image:url(${img('gate')})"></div>
@@ -280,6 +282,19 @@ function renderGate(app) {
     </section>
   </main>`;
   $$('[data-enter]', app).forEach((b) => b.addEventListener('click', () => { clank(); go('#/projects'); }));
+  const canvas = $('#wall', app);
+  const notes = [
+    { text: '책 한 권을' },
+    { text: '정답으로 믿지 마세요.' },
+    { text: '책은 새로운 질문의', color: 'rgba(122,59,63,.9)' },
+    { text: '시작입니다.', color: 'rgba(122,59,63,.9)' },
+  ];
+  const draw = () => paintWall(canvas, { notes }).catch(() => {});
+  draw();
+  let t, lastW = canvas.clientWidth;
+  const onResize = () => { clearTimeout(t); t = setTimeout(() => { if (Math.abs(canvas.clientWidth - lastW) > 30) { lastW = canvas.clientWidth; draw(); } }, 200); };
+  window.addEventListener('resize', onResize);
+  cleanup = () => window.removeEventListener('resize', onResize);
 }
 
 // ═════════ 프로젝트 목록 + P1 신규 ═════════
