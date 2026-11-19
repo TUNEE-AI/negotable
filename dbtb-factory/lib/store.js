@@ -29,7 +29,7 @@ export function createStore(file) {
       const loaded = JSON.parse(fs.readFileSync(file, 'utf8'));
       for (const c of COLLECTIONS) db[c] = Array.isArray(loaded[c]) ? loaded[c] : [];
     } catch (err) {
-      console.error('[store] 데이터 파일을 읽지 못했습니다. 새로 시작합니다:', err.message);
+      // Never silently overwrite a damaged database with an empty one.\n      // Stop startup so that the original file can be recovered.\n      throw new Error(`[store] 데이터 파일을 읽지 못했습니다. 원본 보호를 위해 시작을 중단합니다: ${err.message}`, { cause: err });
     }
   }
 
