@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DBTB FACTORY — DON'T BUY THE BOOK | BRAIN FACTORY</title>
+  <meta name="description" content="책은 문제의 해결이 아니라 새로운 질문의 시작. 프로젝트를 설계하고, 지식을 투입하고, 사고를 가공해 외부 AI 제작용 설계 패키지로 출고하는 지식가공공장." />
+  <meta name="theme-color" content="#2b2a28" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%232b2a28'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23b08d57' stroke-width='6' stroke-dasharray='7 5'/%3E%3Ccircle cx='32' cy='32' r='6' fill='%23b08d57'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <!-- 마모된 페인트 질감 필터 (로고용) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <filter id="worn-paint">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="noise" />
+      <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.45" result="mask" />
+      <feComposite in="SourceGraphic" in2="mask" operator="in" result="worn" />
+      <feTurbulence type="turbulence" baseFrequency="0.035" numOctaves="2" seed="3" result="wobble" />
+      <feDisplacementMap in="worn" in2="wobble" scale="2.5" />
+    </filter>
+  </svg>
+
+  <a class="skip" href="#main">본문으로 건너뛰기</a>
+  <div id="app"></div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="modal-root"></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

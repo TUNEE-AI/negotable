@@ -1,0 +1,19 @@
+{
+  "name": "dbtb-factory",
+  "version": "0.1.0",
+  "description": "DBTB FACTORY — DON'T BUY THE BOOK | BRAIN FACTORY 지식가공공장 웹앱",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.10.0",
+    "express": "^4.22.3"
+  }
+}
