@@ -197,6 +197,7 @@ export async function paintPhotoWall(canvas, { src, brand = ["DON'T BUY THE BOOK
   p.textAlign = 'center';
 
   // 브랜드
+  let subBand = [-1, -1];
   const [bx0, by0, bx1, by1] = brandBox;
   const bW = (bx1 - bx0) * W, bH = (by1 - by0) * H, cx = (bx0 + bx1) / 2 * W;
   let fs = 200;
@@ -211,7 +212,7 @@ export async function paintPhotoWall(canvas, { src, brand = ["DON'T BUY THE BOOK
   brand.forEach((t, i) => { p.save(); p.translate(cx, top + i * lineH); p.rotate((r() - 0.5) * 0.008); p.fillText(t, 0, 0); p.restore(); });
   // 벗겨짐 (브랜드 영역만)
   p.globalCompositeOperation = 'destination-out';
-  for (let i = 0; i < 520; i++) { p.fillStyle = `rgba(0,0,0,${0.5 + r() * 0.5})`; p.beginPath(); p.ellipse(bx0 * W + r() * bW, by0 * H + r() * bH, 0.6 + r() * fs * 0.03, 0.5 + r() * fs * 0.02, r() * 3, 0, 7); p.fill(); }
+  for (let i = 0; i < 260; i++) { p.fillStyle = `rgba(0,0,0,${0.5 + r() * 0.5})`; p.beginPath(); p.ellipse(bx0 * W + r() * bW, by0 * H + r() * bH, 0.6 + r() * fs * 0.03, 0.5 + r() * fs * 0.02, r() * 3, 0, 7); p.fill(); }
   for (let i = 0; i < 7000; i++) { p.fillStyle = `rgba(0,0,0,${r() * 0.35})`; p.fillRect(bx0 * W + r() * bW, by0 * H + r() * bH, 1, 1); }
   p.globalCompositeOperation = 'source-over';
 
@@ -226,7 +227,9 @@ export async function paintPhotoWall(canvas, { src, brand = ["DON'T BUY THE BOOK
     if (subW > maxSub) sfs *= maxSub / subW;
     p.font = `${sfs}px "Alfa Slab One", Rockwell, Georgia, serif`;
     p.letterSpacing = `${sfs * 0.3}px`;
-    p.fillText(sub, cx + sfs * 0.15, top + (brand.length - 1) * lineH + subFs * 2.15);
+    const subBase = top + (brand.length - 1) * lineH + subFs * 2.15;
+    p.fillText(sub, cx + sfs * 0.15, subBase);
+    subBand = [(subBase - sfs * 1.1) * dpr, (subBase + sfs * 0.4) * dpr];
     p.letterSpacing = '0px';
   }
   // 설명 (붓 페인트)
@@ -249,19 +252,66 @@ export async function paintPhotoWall(canvas, { src, brand = ["DON'T BUY THE BOOK
     });
   }
 
-  // 벽돌 결 비치기
-  const mask = document.createElement('canvas');
-  mask.width = layer.width; mask.height = layer.height;
-  mask.getContext('2d').drawImage(layer, 0, 0);
-  p.globalCompositeOperation = 'multiply';
-  p.globalAlpha = 0.1;
-  p.drawImage(photo, 0, 0, W, H);
-  p.globalCompositeOperation = 'destination-in';
-  p.globalAlpha = 1;
-  p.setTransform(1, 0, 0, 1, 0, 0);
-  p.drawImage(mask, 0, 0);
+  // ── 벽에 스며든 페인트 ──
+  // 사진의 밝기를 픽셀 단위로 읽어,
+  //  · 주변보다 어두운 곳(줄눈·갈라짐·때)에는 페인트가 덜 묻고
+  //  · 벽돌 결의 밝고 어두움이 페인트 색에 그대로 비치며
+  //  · 큰 얼룩처럼 군데군데 바래고
+  //  · 가장자리는 살짝 번지게 한다.
+  const PW = layer.width, PH = layer.height;
+  const base = document.createElement('canvas');
+  base.width = PW; base.height = PH;
+  const bctx = base.getContext('2d');
+  bctx.imageSmoothingQuality = 'high';
+  bctx.drawImage(photo, 0, 0, PW, PH);
+  const soft = document.createElement('canvas'); // 주변 평균 밝기(흐린 사진)
+  soft.width = Math.max(8, Math.round(PW / 10)); soft.height = Math.max(8, Math.round(PH / 10));
+  const sctx = soft.getContext('2d');
+  sctx.imageSmoothingQuality = 'high';
+  sctx.drawImage(photo, 0, 0, soft.width, soft.height);
+  bctx.save(); bctx.globalAlpha = 1;
+  const blurBase = document.createElement('canvas'); blurBase.width = PW; blurBase.height = PH;
+  const blctx = blurBase.getContext('2d'); blctx.imageSmoothingQuality = 'high'; blctx.drawImage(soft, 0, 0, PW, PH);
+  bctx.restore();
+  const photoPx = bctx.getImageData(0, 0, PW, PH).data;
+  const blurPx = blctx.getImageData(0, 0, PW, PH).data;
+  // 바램 얼룩용 저해상도 노이즈
+  const NG = 24, noise = Array.from({ length: (NG + 1) * (NG + 1) }, () => r());
+  const fade = (u, v) => {
+    const x = u * NG, y = v * NG, i = Math.floor(x), j = Math.floor(y), fx = x - i, fy = y - j;
+    const n = (a, b2) => noise[Math.min(NG, b2) * (NG + 1) + Math.min(NG, a)];
+    return (n(i, j) * (1 - fx) + n(i + 1, j) * fx) * (1 - fy) + (n(i, j + 1) * (1 - fx) + n(i + 1, j + 1) * fx) * fy;
+  };
+  const img = p.getImageData(0, 0, PW, PH);
+  const d = img.data;
+  for (let y = 0; y < PH; y++) {
+    for (let x = 0; x < PW; x++) {
+      const k = (y * PW + x) * 4;
+      const a0 = d[k + 3];
+      if (!a0) continue;
+      const L = (photoPx[k] * 0.3 + photoPx[k + 1] * 0.59 + photoPx[k + 2] * 0.11) / 255;
+      const Lb = (blurPx[k] * 0.3 + blurPx[k + 1] * 0.59 + blurPx[k + 2] * 0.11) / 255;
+      const rel = L - Lb; // 음수 = 줄눈·홈·때
+      const small = y >= subBand[0] && y <= subBand[1]; // 작은 부제는 읽히도록 덜 바래게
+      let m = 0.78 + rel * (small ? 1.6 : 3.2);
+      m = m < (small ? 0.6 : 0.12) ? (small ? 0.6 : 0.12) : m > 1 ? 1 : m;
+      const f = small ? 0.95 : 0.72 + 0.28 * fade(x / PW, y / PH);
+      const alpha = (a0 / 255) * m * f * 0.94;
+      // 페인트 색: 흰색에 벽돌 결의 명암과 약간의 색을 섞는다
+      const shade = 0.8 + 0.28 * (L / (Lb + 0.05)) * 0.75;
+      const tint = 0.1;
+      d[k] = Math.min(255, (255 * (1 - tint) + photoPx[k] * tint) * shade);
+      d[k + 1] = Math.min(255, (253 * (1 - tint) + photoPx[k + 1] * tint) * shade);
+      d[k + 2] = Math.min(255, (248 * (1 - tint) + photoPx[k + 2] * tint) * shade);
+      d[k + 3] = Math.round(alpha * 255);
+    }
+  }
+  p.putImageData(img, 0, 0);
 
-  g.save(); g.shadowColor = 'rgba(20,10,6,.4)'; g.shadowBlur = 3; g.shadowOffsetY = 1;
+  // 가장자리를 아주 살짝 번지게 그린다 (벽 표면의 미세한 요철)
+  g.save();
+  g.filter = 'blur(0.45px)';
   g.drawImage(layer, 0, 0, W, H);
   g.restore();
 }
+
