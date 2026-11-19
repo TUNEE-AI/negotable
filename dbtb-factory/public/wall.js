@@ -11,7 +11,7 @@ function rng(seed) {
 
 const BRICKS = ['#7d3f30', '#8a4a37', '#6e3729', '#94563f', '#5f3226', '#834635', '#a0624a', '#73402f', '#6a3324'];
 
-export async function paintWall(canvas, { brand = ["DON'T BUY", 'THE BOOK'], sub = 'BRAIN FACTORY', notes = [] } = {}) {
+export async function paintWall(canvas, { brand = ["DON'T BUY", 'THE BOOK'], sub = 'KNOWLEDGE ONTOLOGY FACTORY', notes = [] } = {}) {
   try {
     await Promise.all([
       document.fonts.load('100px "Alfa Slab One"'),
@@ -173,7 +173,7 @@ function loadImage(src) {
   return new Promise((ok, fail) => { const im = new Image(); im.onload = () => ok(im); im.onerror = fail; im.src = src; });
 }
 
-export async function paintPhotoWall(canvas, { src, brand = ["DON'T BUY THE BOOK"], sub = 'BRAIN FACTORY', brandBox = [0.05, 0.05, 0.95, 0.34], notes = [], notesBox = null } = {}) {
+export async function paintPhotoWall(canvas, { src, brand = ["DON'T BUY THE BOOK"], sub = 'KNOWLEDGE ONTOLOGY FACTORY', brandBox = [0.05, 0.05, 0.95, 0.34], notes = [], notesBox = null } = {}) {
   const [photo] = await Promise.all([
     loadImage(src),
     document.fonts.load('100px "Alfa Slab One"').catch(() => {}),
@@ -209,19 +209,26 @@ export async function paintPhotoWall(canvas, { src, brand = ["DON'T BUY THE BOOK
   p.fillStyle = '#f4ecdb';
   p.font = `${fs}px "Alfa Slab One", Rockwell, Georgia, serif`;
   brand.forEach((t, i) => { p.save(); p.translate(cx, top + i * lineH); p.rotate((r() - 0.5) * 0.008); p.fillText(t, 0, 0); p.restore(); });
-  if (sub) {
-    p.fillStyle = '#ead9b4';
-    p.font = `${subFs}px "Alfa Slab One", Rockwell, Georgia, serif`;
-    p.letterSpacing = `${subFs * 0.45}px`;
-    p.fillText(sub, cx + subFs * 0.22, top + (brand.length - 1) * lineH + subFs * 2.15);
-    p.letterSpacing = '0px';
-  }
   // 벗겨짐 (브랜드 영역만)
   p.globalCompositeOperation = 'destination-out';
   for (let i = 0; i < 520; i++) { p.fillStyle = `rgba(0,0,0,${0.5 + r() * 0.5})`; p.beginPath(); p.ellipse(bx0 * W + r() * bW, by0 * H + r() * bH, 0.6 + r() * fs * 0.03, 0.5 + r() * fs * 0.02, r() * 3, 0, 7); p.fill(); }
   for (let i = 0; i < 7000; i++) { p.fillStyle = `rgba(0,0,0,${r() * 0.35})`; p.fillRect(bx0 * W + r() * bW, by0 * H + r() * bH, 1, 1); }
   p.globalCompositeOperation = 'source-over';
 
+  if (sub) {
+    p.fillStyle = '#ead9b4';
+    p.font = `${fs}px "Alfa Slab One", Rockwell, Georgia, serif`;
+    const brandW = Math.max(...brand.map((t) => p.measureText(t).width));
+    let sfs = subFs;
+    p.font = `${sfs}px "Alfa Slab One", Rockwell, Georgia, serif`;
+    const subW = p.measureText(sub).width + sub.length * sfs * 0.3;
+    const maxSub = Math.max(brandW * 0.92, Math.min(bW * 0.97, W < 640 ? bW : 0));
+    if (subW > maxSub) sfs *= maxSub / subW;
+    p.font = `${sfs}px "Alfa Slab One", Rockwell, Georgia, serif`;
+    p.letterSpacing = `${sfs * 0.3}px`;
+    p.fillText(sub, cx + sfs * 0.15, top + (brand.length - 1) * lineH + subFs * 2.15);
+    p.letterSpacing = '0px';
+  }
   // 설명 (붓 페인트)
   if (notesBox && notes.length) {
     const [nx0, ny0, nx1, ny1] = notesBox;

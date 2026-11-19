@@ -260,9 +260,7 @@ function renderGate(app) {
   <main id="main">
     <section class="brand-wall" aria-labelledby="brand-title">
       <canvas id="wall" aria-hidden="true"></canvas>
-      <h1 id="brand-title" class="sr-only">DON'T BUY THE BOOK — BRAIN FACTORY</h1>
-      <p class="wall-note" hidden>책 한 권을 정답으로 믿지 마세요.<br /><em>책은 새로운 질문의 시작입니다.</em></p>
-      <p class="sr-only">책 한 권을 정답으로 믿지 마세요. 책은 새로운 질문의 시작입니다.</p>
+      <h1 id="brand-title" class="sr-only">DON'T BUY THE BOOK — KNOWLEDGE ONTOLOGY FACTORY</h1>
     </section>
     <section class="gate" aria-label="공장 정문">
       <div class="backdrop" style="background-image:url(${img('gate')})"></div>
@@ -284,18 +282,13 @@ function renderGate(app) {
   </main>`;
   $$('[data-enter]', app).forEach((b) => b.addEventListener('click', () => { clank(); go('#/projects'); }));
   const canvas = $('#wall', app);
-  const notes = [
-    { text: '책 한 권을 정답으로 믿지 마세요.' },
-    { text: '책은 새로운 질문의 시작입니다.', color: '#f3d9a4' },
-  ];
-  // 사용자가 준 벽 사진(위: 벽돌, 아래: 책장) 위에 쓴다. 좁은 화면은 브랜드를 두 줄로, 설명은 사진 아래 띠에.
+  // 사용자가 준 벽 사진(위: 벽돌, 아래: 책장) 위에 브랜드를 쓴다. 좁은 화면은 두 줄로.
   const draw = () => {
     const narrow = canvas.clientWidth < 640;
-    $('.wall-note', app).hidden = !narrow;
     return paintPhotoWall(canvas, narrow
       ? { src: img('bookshelf-wall'), brand: ["DON'T BUY", 'THE BOOK'], brandBox: [0.06, 0.04, 0.94, 0.5] }
-      : { src: img('bookshelf-wall'), brand: ["DON'T BUY THE BOOK"], brandBox: [0.05, 0.05, 0.95, 0.33], notes, notesBox: [0.18, 0.35, 0.82, 0.5] })
-      .catch(() => paintWall(canvas, { notes }).catch(() => {}));
+      : { src: img('bookshelf-wall'), brand: ["DON'T BUY THE BOOK"], brandBox: [0.05, 0.08, 0.95, 0.42] })
+      .catch(() => paintWall(canvas).catch(() => {}));
   };
   draw();
   let t, lastW = canvas.clientWidth;
