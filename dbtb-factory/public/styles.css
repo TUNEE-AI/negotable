@@ -367,3 +367,17 @@ pre.prompt { white-space: pre-wrap; word-break: break-word; background: #1f1e1c;
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after { animation: none !important; transition: none !important; }
+
+/* ── 아이콘 ── */
+.ic { width: 1.25em; height: 1.25em; flex: none; vertical-align: -0.28em; }
+.ic.big { width: 40px; height: 40px; }
+.topbar nav a, .topbar nav button { display: inline-flex; align-items: center; gap: 6px; }
+.topbar nav .ic { width: 22px; height: 22px; }
+.line li a .ic { width: 24px; height: 24px; }
+.mat-tab .ic.big { width: 44px; height: 44px; }
+.mat-item .ic.big { width: 36px; height: 36px; }
+.ic-title { display: flex; align-items: center; gap: 8px; }
+.ic-title .ic { width: 34px; height: 34px; }
+.tool-card .tool-ic { width: 44px; height: 44px; float: right; margin: 18px 0 4px 8px; }
+.how li .how-ic { width: 56px; height: 56px; margin: 0 auto; }
+@media (max-width: 760px) { .topbar nav .ic { display: none; } }

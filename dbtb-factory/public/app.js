@@ -3,6 +3,9 @@
 // ─────────────────────────────────────────────────────────────
 
 import { paintWall, paintPhotoWall } from './wall.js';
+import { installIcons, icon } from './icons.js';
+
+installIcons();
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -102,14 +105,15 @@ const LAYER_BADGE = { confirmed: ['출처 확인', 'layer-confirmed'], author_cl
 
 // ═════════ 라우팅 ═════════
 const STEPS = [
-  { key: 'design', code: 'P1', label: '프로젝트 설계실' },
-  { key: 'materials', code: 'P2', label: '원재료 보관함' },
-  { key: 'tools', code: 'P3', label: '가공설비실' },
-  { key: 'lab', code: 'P4', label: '특별 사고 실험실' },
-  { key: 'prototypes', code: 'P5', label: '프로토타입 진열대' },
-  { key: 'review', code: 'P6', label: '공장장 검수실' },
-  { key: 'assembly', code: 'P7', label: '최종 조립실' },
+  { key: 'design', icon: 'blueprint', code: 'P1', label: '프로젝트 설계실' },
+  { key: 'materials', icon: 'warehouse', code: 'P2', label: '원재료 보관함' },
+  { key: 'tools', icon: 'machine', code: 'P3', label: '가공설비실' },
+  { key: 'lab', icon: 'flask', code: 'P4', label: '특별 사고 실험실' },
+  { key: 'prototypes', icon: 'conveyor', code: 'P5', label: '프로토타입 진열대' },
+  { key: 'review', icon: 'magnifier', code: 'P6', label: '공장장 검수실' },
+  { key: 'assembly', icon: 'crate', code: 'P7', label: '최종 조립실' },
 ];
+const MAT_ICON = { book: 'book', paper: 'paper', ebook: 'ebook', video: 'video', culture: 'culture', news: 'news' };
 const STATUS_ORDER = ['DRAFT', 'PROJECT_READY', 'MATERIAL_READY', 'PROTOTYPE_SAVED', 'REVIEWED', 'PROCESSING_NEW_VERSION', 'FINALIZING', 'WAREHOUSED', 'EXTERNAL_HANDOFF'];
 
 // 서버판은 주소창 해시(#/p/..)로, 브라우저 데모판(claude.ai 페이지)은 메모리로 화면을 이동한다.
@@ -189,11 +193,11 @@ function shell(app, project, room, render) {
       <a class="mini-logo" href="#/" aria-label="DON'T BUY THE BOOK 첫 화면으로"><span class="long">DON'T BUY THE BOOK</span><span class="short">DBTB</span></a>
       <span class="engine-badge ${engine === 'demo' ? 'demo' : ''}" title="${engine === 'demo' ? 'AI 키가 설정되지 않아 데모 엔진으로 동작합니다' : 'AI 엔진 연결됨'}">${engine === 'demo' ? 'DEMO ENGINE' : 'AI ENGINE'}</span>
       <nav aria-label="공장 메뉴">
-        ${navLink('#/projects', '프로젝트', 'projects')}
-        <a href="#" data-act="tools" ${room === 'tools' ? 'aria-current="page"' : ''}>P3 가공설비실</a>
-        <a href="#" data-act="lab" ${room === 'lab' ? 'aria-current="page"' : ''}>P4 실험실</a>
-        ${navLink('#/warehouse', 'P8 완제품 창고', 'warehouse')}
-        ${navLink('#/skills', 'P9 나의 공구실', 'skills')}
+        ${navLink('#/projects', `${icon('factory')}프로젝트`, 'projects')}
+        <a href="#" data-act="tools" ${room === 'tools' ? 'aria-current="page"' : ''}>${icon('machine')}P3 가공설비실</a>
+        <a href="#" data-act="lab" ${room === 'lab' ? 'aria-current="page"' : ''}>${icon('flask')}P4 실험실</a>
+        ${navLink('#/warehouse', `${icon('cabinet')}P8 완제품 창고`, 'warehouse')}
+        ${navLink('#/skills', `${icon('wrench')}P9 나의 공구실`, 'skills')}
         <button type="button" data-act="settings" aria-label="소리·모션 설정">⚙︎</button>
       </nav>
     </header>
@@ -201,7 +205,7 @@ function shell(app, project, room, render) {
       ${project ? `<aside class="line" aria-label="공정 라인">
         <div class="proj-name">${esc(project.name)}</div>
         <div class="status"><span class="badge brass">${esc(project.status_label)}</span></div>
-        <ol>${STEPS.map((s) => `<li><a href="#/p/${project.id}/${s.key}" class="${doneMap[s.key] ? 'done' : ''}" ${room === s.key ? 'aria-current="page"' : ''}><span class="dot"></span>${s.label}<span class="code">${s.code}</span></a></li>`).join('')}</ol>
+        <ol>${STEPS.map((s) => `<li><a href="#/p/${project.id}/${s.key}" class="${doneMap[s.key] ? 'done' : ''}" ${room === s.key ? 'aria-current="page"' : ''}><span class="dot"></span>${icon(s.icon)}${s.label}<span class="code">${s.code}</span></a></li>`).join('')}</ol>
       </aside>` : ''}
       <main id="main" class="room" tabindex="-1"></main>
     </div>`;
@@ -286,9 +290,9 @@ function renderGate(app) {
     <section class="how" aria-labelledby="how-title">
       <h2 id="how-title">이렇게 씁니다</h2>
       <ol>
-        <li><b>설계</b><span>만들고 싶은 것을 정합니다.</span></li>
-        <li><b>가공</b><span>책·논문·영상·뉴스를 분석 설비에 넣습니다.</span></li>
-        <li><b>출고</b><span>외부 AI가 바로 만들 수 있는 설계서로 받습니다.</span></li>
+        <li>${icon("blueprint", "how-ic")}<b>설계</b><span>만들고 싶은 것을 정합니다.</span></li>
+        <li>${icon("machine", "how-ic")}<b>가공</b><span>책·논문·영상·뉴스를 분석 설비에 넣습니다.</span></li>
+        <li>${icon("crate", "how-ic")}<b>출고</b><span>외부 AI가 바로 만들 수 있는 설계서로 받습니다.</span></li>
       </ol>
       <button class="btn brass big" data-enter>공장 입장 →</button>
     </section>
@@ -404,11 +408,11 @@ async function renderMaterials(el, project) {
   const draftKey = `dbtb-mat-${project.id}`;
   let type = ls.get(`${draftKey}-type`, 'book');
   el.innerHTML = `${head('P2', '원재료 보관함', '선반을 눌러 원재료 종류를 고르세요. 책만이 아니라 모든 지식이 가공됩니다.', { scene: `<div class="hots">${hotspots(SHELF_SPOTS, 'data-shelf', { selected: type })}</div>` })}
-    <div class="mat-tabs" role="tablist" aria-label="원재료 종류">${Object.entries(materialTypes).map(([k, t]) => `<button class="mat-tab" role="tab" data-type="${k}" aria-selected="${k === type}"><span class="ic" aria-hidden="true">${t.icon}</span>${t.label}</button>`).join('')}</div>
+    <div class="mat-tabs" role="tablist" aria-label="원재료 종류">${Object.entries(materialTypes).map(([k, t]) => `<button class="mat-tab" role="tab" data-type="${k}" aria-selected="${k === type}">${icon(MAT_ICON[k], "big")}${t.label}</button>`).join('')}</div>
     <div class="grid c2" style="align-items:start">
       <form class="panel plate" id="mat-form" novalidate></form>
       <section class="panel"><div class="spread"><h2>투입된 원재료 <span class="badge">${mats.length}</span></h2><a class="btn primary sm" href="#/p/${project.id}/tools">가공설비실로 →</a></div>
-        ${mats.length ? `<div class="grid">${mats.map((m) => `<div class="mat-item"><span class="ic" aria-hidden="true">${materialTypes[m.type].icon}</span><div class="body">
+        ${mats.length ? `<div class="grid">${mats.map((m) => `<div class="mat-item">${icon(MAT_ICON[m.type], "big")}<div class="body">
           <div class="title">${esc(m.title)}</div><div class="small muted">${esc(materialTypes[m.type].label)}${m.author ? ` · ${esc(m.author)}` : ''}${m.uri ? ` · <a href="${esc(m.uri)}" target="_blank" rel="noopener noreferrer">링크</a>` : ''}</div>
           <div class="row small" style="margin-top:4px"><span class="badge">${esc(rights[m.rights_status])}</span><span class="badge ${m.analysis_mode === 'text_provided' ? 'ok' : 'brass'}">${m.analysis_mode === 'text_provided' ? '제공 텍스트 분석' : '공개자료 기반 관점 분석'}</span>${m.file_ref ? `<span class="badge">📎 ${esc(m.file_ref.name)}</span>` : ''}</div></div>
           <button class="btn ghost sm" data-del="${m.id}" aria-label="${esc(m.title)} 삭제">삭제</button></div>`).join('')}</div>`
@@ -421,7 +425,7 @@ async function renderMaterials(el, project) {
     const d = ls.get(`${draftKey}-${type}`, {});
     const f = (name, label, ph = '', extra = '') => `<label class="field"><span>${label}</span><input type="text" name="${name}" value="${esc(d[name])}" placeholder="${ph}" ${extra}/></label>`;
     const ta = (name, label, ph = '') => `<label class="field"><span>${label}</span><textarea name="${name}" placeholder="${ph}">${esc(d[name])}</textarea></label>`;
-    form.innerHTML = `<h2>${t.icon} ${t.label} 추가</h2><p class="hint" style="margin-top:-6px">${esc(t.hint)}</p>
+    form.innerHTML = `<h2 class="ic-title">${icon(MAT_ICON[type])} ${t.label} 추가</h2><p class="hint" style="margin-top:-6px">${esc(t.hint)}</p>
       <label class="field"><span>${type === 'culture' ? '작품명' : '제목'}<em>필수</em></span><input type="text" name="title" value="${esc(d.title)}" required /></label>
       ${f('author', type === 'news' ? '매체/기자' : type === 'culture' ? '감독/작가' : '저자', '')}
       ${type === 'book' ? `${f('isbn', 'ISBN (선택)', '978...')}<div class="row"><button type="button" class="btn sm" data-resolve>📚 도서 식별 (Open Library)</button><span class="small muted">서지 정보만 조회하며 본문은 가져오지 않습니다.</span></div><div class="candidates" id="cands"></div>` : ''}
@@ -518,12 +522,12 @@ async function renderTools(el, project, { query }) {
   el.innerHTML = `${head('P3', '가공설비실', '기계를 눌러 설비를 고르고, 아래 레버를 끝까지 당기면 가동됩니다. 재가공은 새 버전으로 저장됩니다.', { scene: `<div class="hots">${hotspots(HALL_SPOTS, 'data-machine', { selected, rec: rec.tool_ids })}</div>` })}
     ${!mats.length ? `<div class="notice" style="margin-bottom:12px">원재료가 없습니다. 지금 가동하면 결과는 모두 “가정 기반 시뮬레이션”으로 표시됩니다. <a href="#/p/${project.id}/materials">원재료 추가하기</a></div>` : ''}
     <section class="panel"><div class="spread"><h2>AI 공장장 추천</h2><span class="small muted">프로젝트 목표·재료를 보고 고른 3종</span></div>
-      <div class="grid c3">${ordered.map((t) => `<button class="tool-card" type="button" data-tool="${t.id}" aria-pressed="${t.id === selected}">${rec.tool_ids.includes(t.id) ? '<span class="badge brass rec">추천</span>' : ''}<div class="name">${esc(t.name)}</div><div class="out">${esc(t.output)}</div><div class="small muted">입력: ${esc(t.input)}</div></button>`).join('')}</div>
+      <div class="grid c3">${ordered.map((t) => `<button class="tool-card" type="button" data-tool="${t.id}" aria-pressed="${t.id === selected}">${rec.tool_ids.includes(t.id) ? '<span class="badge brass rec">추천</span>' : ''}${icon(t.id, 'tool-ic')}<div class="name">${esc(t.name)}</div><div class="out">${esc(t.output)}</div><div class="small muted">입력: ${esc(t.input)}</div></button>`).join('')}</div>
     </section>
     <section class="panel">
       <div class="grid c2">
         <label class="field"><span>투입할 원재료</span>
-          <div id="mat-pick">${mats.length ? mats.map((m) => `<label class="check"><input type="checkbox" value="${m.id}" checked/> <span>${CATALOG.materialTypes[m.type].icon} ${esc(m.title)}</span></label>`).join('') : '<span class="small muted">(없음)</span>'}</div></label>
+          <div id="mat-pick">${mats.length ? mats.map((m) => `<label class="check"><input type="checkbox" value="${m.id}" checked/> <span>${icon(MAT_ICON[m.type])} ${esc(m.title)}</span></label>`).join('') : '<span class="small muted">(없음)</span>'}</div></label>
         <div>
           <label class="field"><span>기준 프로토타입 (재가공)</span><select id="src"><option value="">없음 — 새로 가공</option>${protos.map((p) => `<option value="${p.id}" ${p.id === source ? 'selected' : ''}>${esc(p.version_label)} · ${esc(p.tool_name)}</option>`).join('')}</select><div class="hint">기준 버전은 그대로 보존되고, 이것을 부모로 한 새 버전이 생깁니다.</div></label>
           <label class="field"><span>집중 관점 (선택)</span><input type="text" id="focus" maxlength="500" placeholder="예: 비용을 거의 쓰지 않는 방법 위주로" /></label>
@@ -940,7 +944,7 @@ async function renderSkills(el) {
       <div class="row"><button class="btn primary">공구 저장</button><button type="button" class="btn ghost" id="sk-reset">새로 만들기</button></div>
     </form>
     <section class="panel"><h2>내 공구 <span class="badge">${skills.length}</span></h2>
-      ${skills.length ? `<div class="grid">${skills.map((s) => `<div class="mat-item"><span class="ic">🔧</span><div class="body"><div class="title">${esc(s.name)} <span class="badge">v${s.version}</span></div><div class="small muted">${esc(s.instruction).slice(0, 100)}</div>
+      ${skills.length ? `<div class="grid">${skills.map((s) => `<div class="mat-item">${icon("wrench", "big")}<div class="body"><div class="title">${esc(s.name)} <span class="badge">v${s.version}</span></div><div class="small muted">${esc(s.instruction).slice(0, 100)}</div>
         <div class="row" style="margin-top:6px"><button class="btn sm" data-edit="${s.id}">편집</button><button class="btn sm" data-test="${s.id}">테스트</button><button class="btn sm ghost" data-del="${s.id}">삭제</button></div></div></div>`).join('')}</div>` : '<div class="empty">아직 공구가 없습니다.</div>'}
     </section>
   </div>`;
