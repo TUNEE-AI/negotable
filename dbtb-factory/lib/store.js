@@ -40,6 +40,7 @@ export function createStore(file) {
     timer = setTimeout(flush, 50);
   }
   function flush() {
+    if (timer) { clearTimeout(timer); timer = null; }
     if (!file) return;
     fs.mkdirSync(path.dirname(file), { recursive: true });
     const tmp = `${file}.tmp`;
