@@ -381,3 +381,57 @@ html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after 
 .tool-card .tool-ic { width: 44px; height: 44px; float: right; margin: 18px 0 4px 8px; }
 .how li .how-ic { width: 56px; height: 56px; margin: 0 auto; }
 @media (max-width: 760px) { .topbar nav .ic { display: none; } }
+
+/* DBTB landing: one architectural scene only — no bookshelf or duplicated hero.
+   The industrial entrance image includes the painted DBTB wordmark and small door. */
+.factory-landing { min-height: 100svh; background: #5b554f; }
+.factory-landing .gate-single {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  background: #77716b;
+  overflow: hidden;
+  position: relative;
+}
+.factory-landing .gate-single .stage {
+  position: relative;
+  width: min(100%, 1780px);
+  aspect-ratio: 1448 / 825;
+  max-height: 100svh;
+  overflow: hidden;
+}
+.factory-landing .gate-single .stage > img {
+  width: 100%; height: 100%;
+  display: block;
+  object-fit: contain;
+  filter: grayscale(.62) saturate(.45) brightness(1.13) contrast(.98);
+}
+.factory-landing .gate-single .door-hot {
+  left: 45.6%; top: 69.1%; width: 11%; height: 20.8%;
+  background: transparent; border-radius: 3px;
+  z-index: 2;
+}
+.factory-landing .gate-enter {
+  position: absolute;
+  bottom: clamp(12px, 3vh, 32px);
+  left: 50%; transform: translateX(-50%);
+  z-index: 3;
+  color: #f1e8d8;
+  background: #292825e8;
+  border: 1px solid #aca393;
+  padding: 10px 20px;
+  border-radius: 3px;
+  cursor: pointer;
+  font: 600 .95rem var(--font-ui);
+  white-space: nowrap;
+  box-shadow: 0 3px 15px #1117;
+}
+.factory-landing .gate-enter:hover,
+.factory-landing .gate-enter:focus-visible { background: #51483d; }
+@media (max-width: 740px) {
+  .factory-landing .gate-single { align-items: center; }
+  .factory-landing .gate-single .stage {
+    width: 100%; max-height: none; aspect-ratio: 1448 / 825;
+  }
+  .factory-landing .gate-enter { bottom: max(24px,env(safe-area-inset-bottom,12px)); }
+}
