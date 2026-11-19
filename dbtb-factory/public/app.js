@@ -276,47 +276,26 @@ const SHELF_SPOTS = [
 
 // ═════════ L0 공장 정문 ═════════
 function renderGate(app) {
+  // 단일 장면의 공장 정문: DBTB 페인트 로고는 실제 공장 이미지에 포함됨.
+  // 책장 벽·대형 슬로건·중복 배너를 절대 렌더링하지 않음.
   app.innerHTML = `
-  <main id="main">
-    <section class="brand-wall" aria-labelledby="brand-title">
-      <canvas id="wall" aria-hidden="true"></canvas>
-      <h1 id="brand-title" class="sr-only">DON'T BUY THE BOOK — KNOWLEDGE ONTOLOGY FACTORY</h1>
-    </section>
-    <section class="gate" aria-label="공장 정문">
-      <div class="backdrop" style="background-image:url(${img('gate')})"></div>
+  <main id="main" class="factory-landing">
+    <section class="gate gate-single" aria-labelledby="gate-title">
+      <h1 id="gate-title" class="sr-only">DBTB 지식가공공장</h1>
       <div class="stage">
-        <img src="${img('gate')}" alt="비 내린 마당 앞의 대형 벽돌 공장. 외벽에 흰 페인트로 DBTB라고 쓰여 있고, 가운데 철문 위에 등이 켜져 있다." fetchpriority="high" />
-        <button class="door-hot" type="button" data-enter aria-label="철문을 열고 공장 입장"></button>
+        <img src="${img('gate')}" alt="창문 없는 거대한 빈티지 벽돌공장. 벽에 오래된 흰색 페인트로 DBTB라고 적혀 있고 중앙에는 작은 철문이 있다." fetchpriority="high" />
+        <button class="door-hot" type="button" data-enter aria-label="공장 철문을 열고 입장"></button>
       </div>
-    </section>
-    <section class="how" aria-labelledby="how-title">
-      <h2 id="how-title">이렇게 씁니다</h2>
-      <ol>
-        <li>${icon("blueprint", "how-ic")}<b>설계</b><span>만들고 싶은 것을 정합니다.</span></li>
-        <li>${icon("machine", "how-ic")}<b>가공</b><span>책·논문·영상·뉴스를 분석 설비에 넣습니다.</span></li>
-        <li>${icon("crate", "how-ic")}<b>출고</b><span>외부 AI가 바로 만들 수 있는 설계서로 받습니다.</span></li>
-      </ol>
-      <button class="btn brass big" data-enter>공장 입장 →</button>
+      <button class="gate-enter" type="button" data-enter>공장 입장하기 <span aria-hidden="true">→</span></button>
     </section>
   </main>`;
-  $$('[data-enter]', app).forEach((b) => b.addEventListener('click', () => { clank(); go('#/projects'); }));
-  const canvas = $('#wall', app);
-  // 사용자가 준 벽 사진(위: 벽돌, 아래: 책장) 위에 브랜드를 쓴다. 좁은 화면은 두 줄로.
-  const draw = () => {
-    const narrow = canvas.clientWidth < 640;
-    return paintPhotoWall(canvas, narrow
-      ? { src: img('bookshelf-wall'), brand: ["DON'T BUY", 'THE BOOK'], brandBox: [0.06, 0.04, 0.94, 0.5] }
-      : { src: img('bookshelf-wall'), brand: ["DON'T BUY THE BOOK"], brandBox: [0.05, 0.08, 0.95, 0.42] })
-      .catch(() => paintWall(canvas).catch(() => {}));
-  };
-  draw();
-  let t, lastW = canvas.clientWidth;
-  const onResize = () => { clearTimeout(t); t = setTimeout(() => { if (Math.abs(canvas.clientWidth - lastW) > 30) { lastW = canvas.clientWidth; draw(); } }, 200); };
-  window.addEventListener('resize', onResize);
-  cleanup = () => window.removeEventListener('resize', onResize);
+  $$('[data-enter]', app).forEach((button) => button.addEventListener('click', () => {
+    clank();
+    go('#/projects');
+  }));
 }
 
-// ═════════ 프로젝트 목록 + P1 신규 ═════════
+// // ═════════ 프로젝트 목록 + P1 신규 ═════════
 async function renderProjects(el) {
   const list = await api('GET', '/api/projects');
   const draft = ls.get('dbtb-draft-new', {});
