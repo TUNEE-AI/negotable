@@ -316,12 +316,12 @@ async function renderMaterials(el, project) {
     <div class="mat-tabs" role="tablist" aria-label="원재료 종류">${Object.entries(materialTypes).map(([k, t]) => `<button class="mat-tab" role="tab" data-type="${k}" aria-selected="${k === type}"><span class="ic" aria-hidden="true">${t.icon}</span>${t.label}</button>`).join('')}</div>
     <div class="grid c2" style="align-items:start">
       <form class="panel plate" id="mat-form" novalidate></form>
-      <section class="panel"><div class="spread"><h2>투입된 원재료 <span class="badge">${mats.length}</span></h2>${mats.length ? `<a class="btn primary sm" href="#/p/${project.id}/tools">가공설비실로 →</a>` : ''}</div>
+      <section class="panel"><div class="spread"><h2>투입된 원재료 <span class="badge">${mats.length}</span></h2><a class="btn primary sm" href="#/p/${project.id}/tools">가공설비실로 →</a></div>
         ${mats.length ? `<div class="grid">${mats.map((m) => `<div class="mat-item"><span class="ic" aria-hidden="true">${materialTypes[m.type].icon}</span><div class="body">
           <div class="title">${esc(m.title)}</div><div class="small muted">${esc(materialTypes[m.type].label)}${m.author ? ` · ${esc(m.author)}` : ''}${m.uri ? ` · <a href="${esc(m.uri)}" target="_blank" rel="noopener noreferrer">링크</a>` : ''}</div>
           <div class="row small" style="margin-top:4px"><span class="badge">${esc(rights[m.rights_status])}</span><span class="badge ${m.analysis_mode === 'text_provided' ? 'ok' : 'brass'}">${m.analysis_mode === 'text_provided' ? '제공 텍스트 분석' : '공개자료 기반 관점 분석'}</span>${m.file_ref ? `<span class="badge">📎 ${esc(m.file_ref.name)}</span>` : ''}</div></div>
           <button class="btn ghost sm" data-del="${m.id}" aria-label="${esc(m.title)} 삭제">삭제</button></div>`).join('')}</div>`
-        : '<div class="empty">왼쪽에서 첫 원재료를 추가하세요.<br/>재료 없이도 가공할 수 있지만, 근거가 없는 결과는 모두 “가정”으로 표시됩니다.</div>'}
+        : '<div class="empty">첫 원재료를 추가하세요.<br/>재료 없이도 가공할 수 있지만, 근거가 없는 결과는 모두 “가정”으로 표시됩니다.</div>'}
       </section>
     </div>`;
   const form = $('#mat-form', el);
