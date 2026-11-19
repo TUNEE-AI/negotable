@@ -194,10 +194,10 @@ function shell(app, project, room, render) {
       <span class="engine-badge ${engine === 'demo' ? 'demo' : ''}" title="${engine === 'demo' ? 'AI 키가 설정되지 않아 데모 엔진으로 동작합니다' : 'AI 엔진 연결됨'}">${engine === 'demo' ? 'DEMO ENGINE' : 'AI ENGINE'}</span>
       <nav aria-label="공장 메뉴">
         ${navLink('#/projects', `${icon('factory')}프로젝트`, 'projects')}
-        <a href="#" data-act="tools" ${room === 'tools' ? 'aria-current="page"' : ''}>${icon('machine')}P3 가공설비실</a>
-        <a href="#" data-act="lab" ${room === 'lab' ? 'aria-current="page"' : ''}>${icon('flask')}P4 실험실</a>
-        ${navLink('#/warehouse', `${icon('cabinet')}P8 완제품 창고`, 'warehouse')}
-        ${navLink('#/skills', `${icon('wrench')}P9 나의 공구실`, 'skills')}
+        <a href="#" data-act="tools" ${room === 'tools' ? 'aria-current="page"' : ''}>${icon('machine')}가공설비실</a>
+        <a href="#" data-act="lab" ${room === 'lab' ? 'aria-current="page"' : ''}>${icon('flask')}실험실</a>
+        ${navLink('#/warehouse', `${icon('cabinet')}완제품 창고`, 'warehouse')}
+        ${navLink('#/skills', `${icon('wrench')}나의 공구실`, 'skills')}
         <button type="button" data-act="settings" aria-label="소리·모션 설정">⚙︎</button>
       </nav>
     </header>
@@ -205,7 +205,7 @@ function shell(app, project, room, render) {
       ${project ? `<aside class="line" aria-label="공정 라인">
         <div class="proj-name">${esc(project.name)}</div>
         <div class="status"><span class="badge brass">${esc(project.status_label)}</span></div>
-        <ol>${STEPS.map((s) => `<li><a href="#/p/${project.id}/${s.key}" class="${doneMap[s.key] ? 'done' : ''}" ${room === s.key ? 'aria-current="page"' : ''}><span class="dot"></span>${icon(s.icon)}${s.label}<span class="code">${s.code}</span></a></li>`).join('')}</ol>
+        <ol>${STEPS.map((s) => `<li><a href="#/p/${project.id}/${s.key}" class="${doneMap[s.key] ? 'done' : ''}" ${room === s.key ? 'aria-current="page"' : ''}><span class="dot"></span>${icon(s.icon)}${s.label}</a></li>`).join('')}</ol>
       </aside>` : ''}
       <main id="main" class="room" tabindex="-1"></main>
     </div>`;
@@ -252,11 +252,11 @@ const ROOM_ART = {
 const img = (name) => `images/${name}.webp`;
 function head(code, title, desc, { scene = '' } = {}) {
   const art = ROOM_ART[code];
-  if (!art) return `<div class="room-head"><div class="code">${code}</div><h1>${title}</h1>${desc ? `<p>${desc}</p>` : ''}</div>`;
+  if (!art) return `<div class="room-head"><h1>${title}</h1>${desc ? `<p>${desc}</p>` : ''}</div>`;
   return `<header class="room-head has-art scene">
     <img class="art" src="${img(art[0])}" alt="" style="object-position:${art[1]}" decoding="async" />
     ${scene}
-    <div class="cap"><div class="code">${code}</div><h1>${title}</h1>${desc ? `<p>${desc}</p>` : ''}</div>
+    <div class="cap"><h1>${title}</h1>${desc ? `<p>${desc}</p>` : ''}</div>
   </header>`;
 }
 /** 이미지 위 클릭 영역(좌표는 원본 이미지 기준 %) */
