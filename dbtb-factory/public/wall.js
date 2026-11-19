@@ -164,3 +164,87 @@ export async function paintWall(canvas, { brand = ["DON'T BUY", 'THE BOOK'], sub
     });
   }
 }
+
+// ─────────────────────────────────────────────────────────────
+// 사용자가 준 벽 사진(왼쪽 벽돌 + 오른쪽 회벽) 위에 페인트로 쓴다.
+// 사진은 자르거나 가리지 않고 원본 비율 그대로 그린다.
+// ─────────────────────────────────────────────────────────────
+function loadImage(src) {
+  return new Promise((ok, fail) => { const im = new Image(); im.onload = () => ok(im); im.onerror = fail; im.src = src; });
+}
+
+export async function paintPhotoWall(canvas, { src, brand = ["DON'T BUY", 'THE BOOK'], sub = 'BRAIN FACTORY', notes = [], showNotes = true } = {}) {
+  const [photo] = await Promise.all([
+    loadImage(src),
+    document.fonts.load('100px "Alfa Slab One"').catch(() => {}),
+    document.fonts.load('40px "Nanum Brush Script"').catch(() => {}),
+  ]);
+  const W = Math.max(300, Math.round(canvas.clientWidth));
+  const H = Math.round(W * photo.naturalHeight / photo.naturalWidth);
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = W * dpr; canvas.height = H * dpr; canvas.style.height = `${H}px`;
+  const g = canvas.getContext('2d');
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.imageSmoothingQuality = 'high';
+  g.drawImage(photo, 0, 0, W, H);
+  const r = rng(8);
+
+  // ── 벽돌 위 브랜드 (사진의 벽돌 결이 페인트에 비치게) ──
+  const areaX = W * 0.02, areaW = W * 0.68, cx = areaX + areaW / 2;
+  const layer = document.createElement('canvas');
+  layer.width = canvas.width; layer.height = canvas.height;
+  const p = layer.getContext('2d');
+  p.setTransform(dpr, 0, 0, dpr, 0, 0);
+  let fs = 200;
+  p.font = `${fs}px "Alfa Slab One", Rockwell, Georgia, serif`;
+  fs = Math.min(fs * (areaW * 0.9) / Math.max(...brand.map((t) => p.measureText(t).width)), H * 0.27);
+  const lineH = fs * 1.02, subFs = fs * 0.24;
+  const top = (H * 0.93 - (lineH * brand.length + subFs * 1.6)) / 2 + fs * 0.85;
+  p.textAlign = 'center';
+  p.fillStyle = '#f3ecdc';
+  p.font = `${fs}px "Alfa Slab One", Rockwell, Georgia, serif`;
+  brand.forEach((t, i) => { p.save(); p.translate(cx, top + i * lineH); p.rotate((r() - 0.5) * 0.01); p.fillText(t, 0, 0); p.restore(); });
+  p.font = `${subFs}px "Alfa Slab One", Rockwell, Georgia, serif`;
+  p.letterSpacing = `${subFs * 0.4}px`;
+  p.fillText(sub, cx, top + (brand.length - 1) * lineH + subFs * 2.1);
+  p.letterSpacing = '0px';
+  const mask = document.createElement('canvas');
+  mask.width = layer.width; mask.height = layer.height;
+  mask.getContext('2d').drawImage(layer, 0, 0);
+  p.globalCompositeOperation = 'multiply';
+  p.globalAlpha = 0.2;
+  p.drawImage(photo, 0, 0, W, H);
+  p.globalCompositeOperation = 'destination-in';
+  p.globalAlpha = 1;
+  p.setTransform(1, 0, 0, 1, 0, 0);
+  p.drawImage(mask, 0, 0);
+  p.setTransform(dpr, 0, 0, dpr, 0, 0);
+  p.globalCompositeOperation = 'destination-out';
+  for (let i = 0; i < 380; i++) { p.fillStyle = `rgba(0,0,0,${0.5 + r() * 0.5})`; p.beginPath(); p.ellipse(areaX + r() * areaW, r() * H, 0.6 + r() * fs * 0.03, 0.5 + r() * fs * 0.02, r() * 3, 0, 7); p.fill(); }
+  for (let i = 0; i < 5000; i++) { p.fillStyle = `rgba(0,0,0,${r() * 0.35})`; p.fillRect(areaX + r() * areaW, r() * H, 1, 1); }
+  g.save(); g.shadowColor = 'rgba(20,10,6,.35)'; g.shadowBlur = 3; g.shadowOffsetY = 1;
+  g.drawImage(layer, 0, 0, W, H);
+  g.restore();
+  g.globalAlpha = 1;
+
+  // ── 오른쪽 회벽 위 붓글씨 ──
+  if (showNotes && notes.length) {
+    const nx = W * 0.815, nw = W * 0.165;
+    let nfs = 80;
+    g.font = `${nfs}px "Nanum Brush Script", cursive`;
+    nfs = Math.min(nfs * nw / Math.max(...notes.map((t) => g.measureText(t.text).width)), H * 0.095);
+    const total = notes.length * nfs * 1.2;
+    let y = Math.max(H * 0.2, (H * 0.92 - total) / 2) + nfs;
+    g.textAlign = 'left';
+    g.globalCompositeOperation = 'multiply';
+    notes.forEach((t) => {
+      g.save(); g.translate(nx, y); g.rotate(-0.025);
+      g.font = `${nfs}px "Nanum Brush Script", cursive`;
+      g.fillStyle = t.color || 'rgba(40,32,28,.9)';
+      g.fillText(t.text, 0, 0);
+      g.restore();
+      y += nfs * 1.2 * (t.gap || 1);
+    });
+    g.globalCompositeOperation = 'source-over';
+  }
+}

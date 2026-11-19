@@ -2,7 +2,7 @@
 // DBTB FACTORY — 프론트엔드 (의존성 없는 바닐라 JS SPA, 해시 라우팅)
 // ─────────────────────────────────────────────────────────────
 
-import { paintWall } from './wall.js';
+import { paintWall, paintPhotoWall } from './wall.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -261,6 +261,7 @@ function renderGate(app) {
     <section class="brand-wall" aria-labelledby="brand-title">
       <canvas id="wall" aria-hidden="true"></canvas>
       <h1 id="brand-title" class="sr-only">DON'T BUY THE BOOK — BRAIN FACTORY</h1>
+      <p class="wall-note" hidden>책 한 권을 정답으로 믿지 마세요.<br /><em>책은 새로운 질문의 시작입니다.</em></p>
       <p class="sr-only">책 한 권을 정답으로 믿지 마세요. 책은 새로운 질문의 시작입니다.</p>
     </section>
     <section class="gate" aria-label="공장 정문">
@@ -283,13 +284,22 @@ function renderGate(app) {
   </main>`;
   $$('[data-enter]', app).forEach((b) => b.addEventListener('click', () => { clank(); go('#/projects'); }));
   const canvas = $('#wall', app);
+  const RED = 'rgba(122,40,40,.92)';
   const notes = [
     { text: '책 한 권을' },
-    { text: '정답으로 믿지 마세요.' },
-    { text: '책은 새로운 질문의', color: 'rgba(122,59,63,.9)' },
-    { text: '시작입니다.', color: 'rgba(122,59,63,.9)' },
+    { text: '정답으로' },
+    { text: '믿지 마세요.', gap: 1.5 },
+    { text: '책은', color: RED },
+    { text: '새로운 질문의', color: RED },
+    { text: '시작입니다.', color: RED },
   ];
-  const draw = () => paintWall(canvas, { notes }).catch(() => {});
+  // 사용자가 준 벽 사진 위에 쓴다. 좁은 화면은 회벽이 너무 좁아 설명을 사진 아래 회벽 띠에 둔다.
+  const draw = () => {
+    const narrow = canvas.clientWidth < 640;
+    $('.wall-note', app).hidden = !narrow;
+    return paintPhotoWall(canvas, { src: img('brick-wall').replace('.webp', '.png'), notes, showNotes: !narrow })
+      .catch(() => paintWall(canvas, { notes }).catch(() => {}));
+  };
   draw();
   let t, lastW = canvas.clientWidth;
   const onResize = () => { clearTimeout(t); t = setTimeout(() => { if (Math.abs(canvas.clientWidth - lastW) > 30) { lastW = canvas.clientWidth; draw(); } }, 200); };

@@ -141,8 +141,14 @@ textarea { min-height: 96px; resize: vertical; }
 .gate .enter-tag:hover { filter: brightness(1.08); }
 .line-photo { margin: 20px 0 0; border-radius: 8px; overflow: hidden; border: 1px solid #55524d; }
 .line-photo img { display: block; width: 100%; height: auto; }
-.brand-wall { position: relative; background: #5f3a2c; }
-.brand-wall canvas { display: block; width: 100%; height: 420px; }
+.brand-wall { position: relative; background: #2a211c; }
+.brand-wall canvas { display: block; width: min(100%, calc(82svh * 1.393), 1400px); height: auto; margin-inline: auto; }
+.wall-note {
+  margin: 0; padding: 18px max(16px, env(safe-area-inset-left, 0px)) 22px; text-align: center;
+  font-family: 'Nanum Brush Script', cursive; font-size: clamp(1.7rem, 8vw, 2.4rem); line-height: 1.25; color: #2b2420;
+  background: #e4dccb radial-gradient(ellipse at 30% 20%, rgba(255,255,255,.35), transparent 60%);
+}
+.wall-note em { font-style: normal; color: #7a2828; }
 .how {
   background: var(--charcoal); color: var(--paper); text-align: center;
   padding-block: clamp(36px, 6vw, 64px); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
