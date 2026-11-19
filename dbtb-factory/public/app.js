@@ -284,20 +284,17 @@ function renderGate(app) {
   </main>`;
   $$('[data-enter]', app).forEach((b) => b.addEventListener('click', () => { clank(); go('#/projects'); }));
   const canvas = $('#wall', app);
-  const RED = 'rgba(122,40,40,.92)';
   const notes = [
-    { text: '책 한 권을' },
-    { text: '정답으로' },
-    { text: '믿지 마세요.', gap: 1.5 },
-    { text: '책은', color: RED },
-    { text: '새로운 질문의', color: RED },
-    { text: '시작입니다.', color: RED },
+    { text: '책 한 권을 정답으로 믿지 마세요.' },
+    { text: '책은 새로운 질문의 시작입니다.', color: '#f3d9a4' },
   ];
-  // 사용자가 준 벽 사진 위에 쓴다. 좁은 화면은 회벽이 너무 좁아 설명을 사진 아래 회벽 띠에 둔다.
+  // 사용자가 준 벽 사진(위: 벽돌, 아래: 책장) 위에 쓴다. 좁은 화면은 브랜드를 두 줄로, 설명은 사진 아래 띠에.
   const draw = () => {
     const narrow = canvas.clientWidth < 640;
     $('.wall-note', app).hidden = !narrow;
-    return paintPhotoWall(canvas, { src: img('brick-wall').replace('.webp', '.png'), notes, showNotes: !narrow })
+    return paintPhotoWall(canvas, narrow
+      ? { src: img('bookshelf-wall'), brand: ["DON'T BUY", 'THE BOOK'], brandBox: [0.06, 0.04, 0.94, 0.5] }
+      : { src: img('bookshelf-wall'), brand: ["DON'T BUY THE BOOK"], brandBox: [0.05, 0.05, 0.95, 0.33], notes, notesBox: [0.18, 0.35, 0.82, 0.5] })
       .catch(() => paintWall(canvas, { notes }).catch(() => {}));
   };
   draw();

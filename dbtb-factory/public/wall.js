@@ -173,7 +173,7 @@ function loadImage(src) {
   return new Promise((ok, fail) => { const im = new Image(); im.onload = () => ok(im); im.onerror = fail; im.src = src; });
 }
 
-export async function paintPhotoWall(canvas, { src, brand = ["DON'T BUY", 'THE BOOK'], sub = 'BRAIN FACTORY', notes = [], showNotes = true } = {}) {
+export async function paintPhotoWall(canvas, { src, brand = ["DON'T BUY THE BOOK"], sub = 'BRAIN FACTORY', brandBox = [0.05, 0.05, 0.95, 0.34], notes = [], notesBox = null } = {}) {
   const [photo] = await Promise.all([
     loadImage(src),
     document.fonts.load('100px "Alfa Slab One"').catch(() => {}),
@@ -189,62 +189,72 @@ export async function paintPhotoWall(canvas, { src, brand = ["DON'T BUY", 'THE B
   g.drawImage(photo, 0, 0, W, H);
   const r = rng(8);
 
-  // ── 벽돌 위 브랜드 (사진의 벽돌 결이 페인트에 비치게) ──
-  const areaX = W * 0.02, areaW = W * 0.68, cx = areaX + areaW / 2;
+  // 페인트 층: 글씨를 칠한 뒤 사진의 벽돌 결을 얕게 곱해 벽에 스며든 느낌을 낸다.
   const layer = document.createElement('canvas');
   layer.width = canvas.width; layer.height = canvas.height;
   const p = layer.getContext('2d');
   p.setTransform(dpr, 0, 0, dpr, 0, 0);
+  p.textAlign = 'center';
+
+  // 브랜드
+  const [bx0, by0, bx1, by1] = brandBox;
+  const bW = (bx1 - bx0) * W, bH = (by1 - by0) * H, cx = (bx0 + bx1) / 2 * W;
   let fs = 200;
   p.font = `${fs}px "Alfa Slab One", Rockwell, Georgia, serif`;
-  fs = Math.min(fs * (areaW * 0.9) / Math.max(...brand.map((t) => p.measureText(t).width)), H * 0.27);
-  const lineH = fs * 1.02, subFs = fs * 0.24;
-  const top = (H * 0.93 - (lineH * brand.length + subFs * 1.6)) / 2 + fs * 0.85;
-  p.textAlign = 'center';
-  p.fillStyle = '#f3ecdc';
+  const subRatio = sub ? 0.26 : 0;
+  fs = Math.min(fs * bW / Math.max(...brand.map((t) => p.measureText(t).width)), bH / (brand.length * 1.02 + subRatio * 1.9));
+  const lineH = fs * 1.02, subFs = fs * subRatio;
+  const blockH = lineH * brand.length + subFs * 1.9;
+  const top = by0 * H + (bH - blockH) / 2 + fs * 0.86;
+  p.fillStyle = '#f4ecdb';
   p.font = `${fs}px "Alfa Slab One", Rockwell, Georgia, serif`;
-  brand.forEach((t, i) => { p.save(); p.translate(cx, top + i * lineH); p.rotate((r() - 0.5) * 0.01); p.fillText(t, 0, 0); p.restore(); });
-  p.font = `${subFs}px "Alfa Slab One", Rockwell, Georgia, serif`;
-  p.letterSpacing = `${subFs * 0.4}px`;
-  p.fillText(sub, cx, top + (brand.length - 1) * lineH + subFs * 2.1);
-  p.letterSpacing = '0px';
+  brand.forEach((t, i) => { p.save(); p.translate(cx, top + i * lineH); p.rotate((r() - 0.5) * 0.008); p.fillText(t, 0, 0); p.restore(); });
+  if (sub) {
+    p.fillStyle = '#ead9b4';
+    p.font = `${subFs}px "Alfa Slab One", Rockwell, Georgia, serif`;
+    p.letterSpacing = `${subFs * 0.45}px`;
+    p.fillText(sub, cx + subFs * 0.22, top + (brand.length - 1) * lineH + subFs * 2.15);
+    p.letterSpacing = '0px';
+  }
+  // 벗겨짐 (브랜드 영역만)
+  p.globalCompositeOperation = 'destination-out';
+  for (let i = 0; i < 520; i++) { p.fillStyle = `rgba(0,0,0,${0.5 + r() * 0.5})`; p.beginPath(); p.ellipse(bx0 * W + r() * bW, by0 * H + r() * bH, 0.6 + r() * fs * 0.03, 0.5 + r() * fs * 0.02, r() * 3, 0, 7); p.fill(); }
+  for (let i = 0; i < 7000; i++) { p.fillStyle = `rgba(0,0,0,${r() * 0.35})`; p.fillRect(bx0 * W + r() * bW, by0 * H + r() * bH, 1, 1); }
+  p.globalCompositeOperation = 'source-over';
+
+  // 설명 (붓 페인트)
+  if (notesBox && notes.length) {
+    const [nx0, ny0, nx1, ny1] = notesBox;
+    const nW = (nx1 - nx0) * W, nH = (ny1 - ny0) * H, ncx = (nx0 + nx1) / 2 * W;
+    let nfs = 100;
+    p.font = `${nfs}px "Nanum Brush Script", cursive`;
+    nfs = Math.min(nfs * nW / Math.max(...notes.map((t) => p.measureText(t.text).width)), nH / (notes.length * 1.15));
+    let y = ny0 * H + (nH - notes.length * nfs * 1.15) / 2 + nfs * 0.9;
+    notes.forEach((t) => {
+      p.save(); p.translate(ncx, y); p.rotate((r() - 0.5) * 0.012);
+      p.font = `${nfs}px "Nanum Brush Script", cursive`;
+      p.fillStyle = t.color || '#f1e8d6';
+      p.strokeStyle = p.fillStyle; p.lineWidth = Math.max(1, nfs * 0.035); p.lineJoin = 'round';
+      p.strokeText(t.text, 0, 0);
+      p.fillText(t.text, 0, 0);
+      p.restore();
+      y += nfs * 1.15;
+    });
+  }
+
+  // 벽돌 결 비치기
   const mask = document.createElement('canvas');
   mask.width = layer.width; mask.height = layer.height;
   mask.getContext('2d').drawImage(layer, 0, 0);
   p.globalCompositeOperation = 'multiply';
-  p.globalAlpha = 0.2;
+  p.globalAlpha = 0.22;
   p.drawImage(photo, 0, 0, W, H);
   p.globalCompositeOperation = 'destination-in';
   p.globalAlpha = 1;
   p.setTransform(1, 0, 0, 1, 0, 0);
   p.drawImage(mask, 0, 0);
-  p.setTransform(dpr, 0, 0, dpr, 0, 0);
-  p.globalCompositeOperation = 'destination-out';
-  for (let i = 0; i < 380; i++) { p.fillStyle = `rgba(0,0,0,${0.5 + r() * 0.5})`; p.beginPath(); p.ellipse(areaX + r() * areaW, r() * H, 0.6 + r() * fs * 0.03, 0.5 + r() * fs * 0.02, r() * 3, 0, 7); p.fill(); }
-  for (let i = 0; i < 5000; i++) { p.fillStyle = `rgba(0,0,0,${r() * 0.35})`; p.fillRect(areaX + r() * areaW, r() * H, 1, 1); }
-  g.save(); g.shadowColor = 'rgba(20,10,6,.35)'; g.shadowBlur = 3; g.shadowOffsetY = 1;
+
+  g.save(); g.shadowColor = 'rgba(20,10,6,.4)'; g.shadowBlur = 3; g.shadowOffsetY = 1;
   g.drawImage(layer, 0, 0, W, H);
   g.restore();
-  g.globalAlpha = 1;
-
-  // ── 오른쪽 회벽 위 붓글씨 ──
-  if (showNotes && notes.length) {
-    const nx = W * 0.815, nw = W * 0.165;
-    let nfs = 80;
-    g.font = `${nfs}px "Nanum Brush Script", cursive`;
-    nfs = Math.min(nfs * nw / Math.max(...notes.map((t) => g.measureText(t.text).width)), H * 0.095);
-    const total = notes.length * nfs * 1.2;
-    let y = Math.max(H * 0.2, (H * 0.92 - total) / 2) + nfs;
-    g.textAlign = 'left';
-    g.globalCompositeOperation = 'multiply';
-    notes.forEach((t) => {
-      g.save(); g.translate(nx, y); g.rotate(-0.025);
-      g.font = `${nfs}px "Nanum Brush Script", cursive`;
-      g.fillStyle = t.color || 'rgba(40,32,28,.9)';
-      g.fillText(t.text, 0, 0);
-      g.restore();
-      y += nfs * 1.2 * (t.gap || 1);
-    });
-    g.globalCompositeOperation = 'source-over';
-  }
 }
