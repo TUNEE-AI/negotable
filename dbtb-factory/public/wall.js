@@ -111,11 +111,11 @@ export async function paintWall(canvas, { brand = ["DON'T BUY", 'THE BOOK'], sub
   const blockH = lineH * brand.length + subFs * 1.8;
   let ty = Math.max(fs * 0.9, (brickH - blockH) / 2 + fs * 0.82);
   p.textAlign = 'center';
-  p.fillStyle = '#eee5d2';
+  p.fillStyle = '#ffffff';
   p.font = `${fs}px "Alfa Slab One", Rockwell, Georgia, serif`;
   brand.forEach((t, i) => { p.save(); p.translate(cx, ty + i * lineH); p.rotate((r() - 0.5) * 0.008); p.fillText(t, 0, 0); p.restore(); });
   p.font = `${subFs}px "Alfa Slab One", Rockwell, Georgia, serif`;
-  p.fillStyle = '#d9c39a';
+  p.fillStyle = '#ffffff';
   const subY = ty + (brand.length - 1) * lineH + subFs * 2.1;
   p.letterSpacing = `${subFs * 0.4}px`;
   p.fillText(sub, cx, subY);
@@ -206,7 +206,7 @@ export async function paintPhotoWall(canvas, { src, brand = ["DON'T BUY THE BOOK
   const lineH = fs * 1.02, subFs = fs * subRatio;
   const blockH = lineH * brand.length + subFs * 1.9;
   const top = by0 * H + (bH - blockH) / 2 + fs * 0.86;
-  p.fillStyle = '#f4ecdb';
+  p.fillStyle = '#ffffff';
   p.font = `${fs}px "Alfa Slab One", Rockwell, Georgia, serif`;
   brand.forEach((t, i) => { p.save(); p.translate(cx, top + i * lineH); p.rotate((r() - 0.5) * 0.008); p.fillText(t, 0, 0); p.restore(); });
   // 벗겨짐 (브랜드 영역만)
@@ -216,7 +216,7 @@ export async function paintPhotoWall(canvas, { src, brand = ["DON'T BUY THE BOOK
   p.globalCompositeOperation = 'source-over';
 
   if (sub) {
-    p.fillStyle = '#ead9b4';
+    p.fillStyle = '#ffffff';
     p.font = `${fs}px "Alfa Slab One", Rockwell, Georgia, serif`;
     const brandW = Math.max(...brand.map((t) => p.measureText(t).width));
     let sfs = subFs;
@@ -254,7 +254,7 @@ export async function paintPhotoWall(canvas, { src, brand = ["DON'T BUY THE BOOK
   mask.width = layer.width; mask.height = layer.height;
   mask.getContext('2d').drawImage(layer, 0, 0);
   p.globalCompositeOperation = 'multiply';
-  p.globalAlpha = 0.22;
+  p.globalAlpha = 0.1;
   p.drawImage(photo, 0, 0, W, H);
   p.globalCompositeOperation = 'destination-in';
   p.globalAlpha = 1;
