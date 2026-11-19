@@ -25,6 +25,7 @@
   --font-ui: 'Noto Sans KR', system-ui, -apple-system, 'Apple SD Gothic Neo', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
   --font-logo: 'UnifrakturCook', 'Old English Text MT', serif;
+  --font-paint: 'Alfa Slab One', 'Rockwell', 'Georgia', serif;
 
   --r: 6px;
   --shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset, 0 2px 6px rgba(0, 0, 0, 0.12);
@@ -140,13 +141,41 @@ textarea { min-height: 96px; resize: vertical; }
 .gate .enter-tag:hover { filter: brightness(1.08); }
 .line-photo { margin: 20px 0 0; border-radius: 8px; overflow: hidden; border: 1px solid #55524d; }
 .line-photo img { display: block; width: 100%; height: auto; }
-.gate-about { background: var(--charcoal); color: var(--paper); padding: 56px 16px; }
-.gate-about .inner { max-width: 1040px; margin: 0 auto; }
-.gate-about h2 { color: var(--brass-2); }
-.gate-about .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-top: 18px; padding: 0; list-style: none; }
-.gate-about .steps li { border: 1px solid #55524d; border-radius: 6px; padding: 12px; background: #33312e; }
-.gate-about .steps b { display: block; color: var(--brass-2); font-family: var(--font-mono); font-size: .8rem; }
-.gate-about .principle { margin-top: 24px; color: var(--stone-2); font-size: .92rem; }
+.brand-wall {
+  position: relative; overflow: hidden; text-align: center; color: #ece3d1;
+  padding-block: clamp(36px, 7vw, 84px) clamp(32px, 6vw, 64px);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background-color: #6b4f42; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='56'%3E%3Crect width='120' height='56' fill='%23746457'/%3E%3Crect x='2' y='2' width='56' height='24' fill='%236a4f42'/%3E%3Crect x='62' y='2' width='56' height='24' fill='%23735648'/%3E%3Crect x='-28' y='30' width='56' height='24' fill='%2366493c'/%3E%3Crect x='32' y='30' width='56' height='24' fill='%23704f41'/%3E%3Crect x='92' y='30' width='56' height='24' fill='%23684c3f'/%3E%3C/svg%3E"); background-size: 90px 42px;
+}
+.brand-wall::before { /* 벽등 조명과 가장자리 그늘 */
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 60% 70% at 50% 0%, rgba(255, 214, 160, .28), transparent 70%), radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(20, 14, 10, .55) 100%);
+}
+.brand-wall > * { position: relative; }
+.paint {
+  margin: 0; font-family: var(--font-paint); font-weight: 400; text-transform: uppercase; color: #efe7d6;
+  font-size: clamp(2.7rem, 11vw, 9.5rem); line-height: .98; letter-spacing: .01em; filter: url(#chipped-paint);
+  text-wrap: balance;
+}
+.paint span { display: inline-block; white-space: nowrap; }
+.paint.sub { filter: url(#chipped-paint-sm); font-size: clamp(1rem, 3.2vw, 2.1rem); letter-spacing: .32em; margin-top: clamp(8px, 1.6vw, 18px); color: #e2d3b4; }
+.brand-wall .lead {
+  margin: clamp(18px, 3vw, 30px) auto 0; max-width: 32ch; font-size: clamp(1.1rem, 2.6vw, 1.55rem); font-weight: 700; line-height: 1.5; color: #fff7ea;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, .55);
+}
+.how {
+  background: var(--charcoal); color: var(--paper); text-align: center;
+  padding-block: clamp(36px, 6vw, 64px); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.how h2 { color: var(--brass-2); font-size: clamp(1.2rem, 2.6vw, 1.6rem); }
+.how ol { list-style: none; counter-reset: step; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; max-width: 980px; margin: 18px auto 28px; padding: 0; }
+.how li { counter-increment: step; display: grid; gap: 6px; padding: 20px 16px; border-radius: 8px; background: #36332f; border: 1px solid #55524d; }
+.how li b { font-size: clamp(1.3rem, 2.6vw, 1.7rem); color: #fff; }
+.how li b::before { content: counter(step) '. '; color: var(--brass-2); font-family: var(--font-mono); }
+.how li span { font-size: clamp(1rem, 1.8vw, 1.1rem); color: #e2dccf; }
+.btn.big { min-height: 52px; padding: 12px 28px; font-size: 1.1rem; font-weight: 700; }
+@media (max-width: 700px) { .paint { filter: url(#chipped-paint-sm); } }
+@media (max-width: 700px) { .how ol { grid-template-columns: minmax(0, 1fr); } }
 
 /* ═════════ 공장 내부 셸 ═════════ */
 .topbar {

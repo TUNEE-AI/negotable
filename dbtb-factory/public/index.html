@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#2b2a28" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Alfa+Slab+One&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%232b2a28'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23b08d57' stroke-width='6' stroke-dasharray='7 5'/%3E%3Ccircle cx='32' cy='32' r='6' fill='%23b08d57'/%3E%3C/svg%3E" />
 </head>
@@ -21,6 +21,21 @@
       <feComposite in="SourceGraphic" in2="mask" operator="in" result="worn" />
       <feTurbulence type="turbulence" baseFrequency="0.035" numOctaves="2" seed="3" result="wobble" />
       <feDisplacementMap in="worn" in2="wobble" scale="2.5" />
+    </filter>
+    <!-- 벽돌 위 페인트가 군데군데 벗겨진 질감 (큰 글씨용) -->
+    <filter id="chipped-paint" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="3" seed="11" result="chips" />
+      <feColorMatrix in="chips" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -14 9.6" result="chipMask" />
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="1" seed="4" result="grain" />
+      <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -0.9 1.55" result="grainMask" />
+      <feComposite in="SourceGraphic" in2="chipMask" operator="in" result="chipped" />
+      <feComposite in="chipped" in2="grainMask" operator="in" />
+    </filter>
+    <!-- 작은 글씨용: 벗겨짐을 잘게, 적게 -->
+    <filter id="chipped-paint-sm" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.18" numOctaves="2" seed="11" result="chips" />
+      <feColorMatrix in="chips" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -16 11.8" result="chipMask" />
+      <feComposite in="SourceGraphic" in2="chipMask" operator="in" />
     </filter>
   </svg>
 

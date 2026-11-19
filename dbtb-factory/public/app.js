@@ -256,31 +256,27 @@ const SHELF_SPOTS = [
 function renderGate(app) {
   app.innerHTML = `
   <main id="main">
-    <section class="gate" aria-label="DBTB 공장 정문">
+    <section class="brand-wall" aria-labelledby="brand-title">
+      <h1 id="brand-title" class="paint"><span>DON'T BUY</span> <span>THE BOOK</span></h1>
+      <p class="paint sub">BRAIN FACTORY</p>
+      <p class="lead">책 한 권을 정답으로 믿지 마세요.<br />책은 새로운 질문의 시작입니다.</p>
+    </section>
+    <section class="gate" aria-label="공장 정문">
       <div class="backdrop" style="background-image:url(${img('gate')})"></div>
       <div class="stage">
         <img src="${img('gate')}" alt="비 내린 마당 앞의 대형 벽돌 공장. 외벽에 흰 페인트로 DBTB라고 쓰여 있고, 가운데 철문 위에 등이 켜져 있다." fetchpriority="high" />
-        <div class="tagline"><div class="brand">DON'T BUY THE BOOK · BRAIN FACTORY</div><p>책은 문제의 해결이 아니라 새로운 질문의 시작</p></div>
         <button class="door-hot" type="button" data-enter aria-label="철문을 열고 공장 입장"></button>
         <button class="enter-tag" type="button" data-enter>공장 입장 →</button>
       </div>
     </section>
-    <section class="gate-about">
-      <div class="inner">
-        <h1 class="sr-only">DBTB — DON'T BUY THE BOOK</h1>
-        <h2>“그 책 한 권을 해결책으로 단정하지 마라.”</h2>
-        <p>DBTB는 먼저 <b>만들고 싶은 것</b>을 설계하고, 책·논문·전자책·영상·문화콘텐츠·뉴스를 원재료로 넣어 여러 분석설비와 대화형 사고 실험실에서 가공하는 지식가공공장입니다. 결과는 버전별 프로토타입으로 보존되고, 최종적으로 외부 AI가 바로 제작할 수 있는 설계 패키지로 출고됩니다.</p>
-        <figure class="line-photo"><img src="${img('production-line')}" alt="생산라인: 01 프로젝트 설정, 02 처리 작업, 03 프로토타입, 04 최종 결과 순으로 상자가 컨베이어를 따라 이동한다." loading="lazy" /></figure>
-        <ol class="steps">
-          <li><b>01 설계</b>무엇을 만들고 싶은가</li>
-          <li><b>02 투입</b>여섯 종류의 지식 원재료</li>
-          <li><b>03 가공</b>레버를 당겨 설비 가동</li>
-          <li><b>04 보존</b>Prototype 01, 02, 03…</li>
-          <li><b>05 출고</b>외부 AI용 제작 패키지</li>
-        </ol>
-        <p style="margin-top:22px"><button class="btn brass" data-enter>공장 입장 →</button></p>
-        <p class="principle">DBTB는 책을 완독한 척하게 만드는 서비스가 아닙니다. 원문을 무단으로 재현하지 않으며, 실제 PPT·영상 제작은 사용자가 선택한 외부 AI에서 이루어집니다.</p>
-      </div>
+    <section class="how" aria-labelledby="how-title">
+      <h2 id="how-title">이렇게 씁니다</h2>
+      <ol>
+        <li><b>설계</b><span>만들고 싶은 것을 정합니다.</span></li>
+        <li><b>가공</b><span>책·논문·영상·뉴스를 분석 설비에 넣습니다.</span></li>
+        <li><b>출고</b><span>외부 AI가 바로 만들 수 있는 설계서로 받습니다.</span></li>
+      </ol>
+      <button class="btn brass big" data-enter>공장 입장 →</button>
     </section>
   </main>`;
   $$('[data-enter]', app).forEach((b) => b.addEventListener('click', () => { clank(); go('#/projects'); }));
