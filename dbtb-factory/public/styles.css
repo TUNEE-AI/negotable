@@ -118,9 +118,10 @@ textarea { min-height: 96px; resize: vertical; }
 
 /* ═════════ L0 랜딩 — 공장 정문 (사진) ═════════ */
 .gate { position: relative; overflow: hidden; background: #221d18; display: flex; justify-content: center; }
-.gate .backdrop { position: absolute; inset: -40px; background-size: cover; background-position: center; filter: blur(22px) brightness(.5) saturate(.8); }
-.gate .stage { position: relative; width: min(100%, calc(100svh * 1.3333), 1448px); aspect-ratio: 1448 / 1086; }
-.gate .stage > img { display: block; width: 100%; height: 100%; }
+.gate .backdrop { position: absolute; inset: -40px; background-size: cover; background-position: center top; filter: blur(22px) brightness(.5) grayscale(1); }
+/* 사진 아래 젖은 바닥을 잘라낸 비율(원본 높이의 76%) */
+.gate .stage { position: relative; width: min(100%, calc(100svh * 1.755), 1448px); aspect-ratio: 1448 / 825; overflow: hidden; }
+.gate .stage > img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center top; filter: grayscale(1) contrast(1.06); }
 .gate .tagline {
   position: absolute; top: 2.5%; left: 0; right: 0; text-align: center; color: #f3ecdf; padding: 0 16px;
   text-shadow: 0 1px 2px rgba(0,0,0,.7), 0 0 18px rgba(0,0,0,.6);
@@ -128,7 +129,7 @@ textarea { min-height: 96px; resize: vertical; }
 .gate .tagline .brand { font-family: var(--font-mono); font-size: clamp(.62rem, 1.4vw, .82rem); letter-spacing: .28em; }
 .gate .tagline p { margin: 2px 0 0; font-size: clamp(.9rem, 2.2vw, 1.15rem); font-weight: 500; }
 .gate .door-hot {
-  position: absolute; left: 45.6%; top: 52.5%; width: 11%; height: 15.8%; border: 0; border-radius: 3px; cursor: pointer;
+  position: absolute; left: 45.6%; top: 69.1%; width: 11%; height: 20.8%; border: 0; border-radius: 3px; cursor: pointer;
   background: radial-gradient(ellipse at 50% 30%, rgba(255, 214, 150, .18), transparent 70%);
   transition: box-shadow .25s, background .25s;
 }

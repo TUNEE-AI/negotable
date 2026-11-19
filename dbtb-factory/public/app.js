@@ -267,7 +267,6 @@ function renderGate(app) {
       <div class="stage">
         <img src="${img('gate')}" alt="비 내린 마당 앞의 대형 벽돌 공장. 외벽에 흰 페인트로 DBTB라고 쓰여 있고, 가운데 철문 위에 등이 켜져 있다." fetchpriority="high" />
         <button class="door-hot" type="button" data-enter aria-label="철문을 열고 공장 입장"></button>
-        <button class="enter-tag" type="button" data-enter>공장 입장 →</button>
       </div>
     </section>
     <section class="how" aria-labelledby="how-title">
