@@ -217,34 +217,60 @@ function openSettings() {
   });
 }
 
-function head(code, title, desc) {
-  return `<div class="room-head"><div class="code">${code}</div><h1>${title}</h1>${desc ? `<p>${desc}</p>` : ''}</div>`;
+// 작업실별 배경 장면 (이미지, 보여줄 위치)
+const ROOM_ART = {
+  P1: ['design-office', '50% 38%'],
+  P2: ['material-warehouse', '50% 30%'],
+  P3: ['processing-hall', '50% 30%'],
+  P4: ['production-line', '58% 40%'],
+  P5: ['production-line', '68% 50%'],
+  P6: ['design-office', '78% 45%'],
+  P7: ['production-line', '96% 55%'],
+  P8: ['material-warehouse', '92% 55%'],
+  P9: ['design-office', '6% 60%'],
+};
+const img = (name) => `images/${name}.webp`;
+function head(code, title, desc, { scene = '' } = {}) {
+  const art = ROOM_ART[code];
+  if (!art) return `<div class="room-head"><div class="code">${code}</div><h1>${title}</h1>${desc ? `<p>${desc}</p>` : ''}</div>`;
+  return `<header class="room-head has-art ${scene ? 'scene' : ''}">
+    <img class="art" src="${img(art[0])}" alt="" style="object-position:${art[1]}" decoding="async" />
+    ${scene}
+    <div class="cap"><div class="code">${code}</div><h1>${title}</h1>${desc ? `<p>${desc}</p>` : ''}</div>
+  </header>`;
 }
+/** 이미지 위 클릭 영역(좌표는 원본 이미지 기준 %) */
+function hotspots(spots, attr, { selected, rec = [] } = {}) {
+  return spots.map(([id, label, l, t, w, h]) => `<button type="button" class="hot" ${attr}="${id}" aria-pressed="${id === selected}" aria-label="${esc(label)} 선택" style="left:${l}%;top:${t}%;width:${w}%;height:${h}%">${rec.includes(id) ? '<span class="tag">추천</span>' : ''}<span class="hot-label">${esc(label)}</span></button>`).join('');
+}
+const HALL_SPOTS = [
+  ['swot', 'SWOT', 17.9, 27.1, 12.3, 20.2], ['funnel', '퍼널', 42.9, 27.1, 14.5, 20.2], ['stp', 'STP', 64.0, 27.1, 21.5, 20.2],
+  ['lean', '린 스타트업', 9.0, 52.6, 17.6, 23.4], ['4p', '4P', 30.2, 52.6, 17.9, 23.4], ['pest', 'PEST', 51.7, 52.6, 17.9, 23.4], ['porter5', '포터 5 Forces', 70.9, 52.6, 19.7, 23.4],
+];
+const SHELF_SPOTS = [
+  ['book', '책', 17.9, 30.8, 15.3, 51.0], ['paper', '논문', 33.5, 38.3, 12.3, 35.1], ['video', '영상', 51.4, 42.5, 10.5, 30.8],
+  ['news', '뉴스', 64.9, 41.4, 10.8, 31.9], ['ebook', '전자책·문서', 83.4, 31.9, 16.2, 40.4],
+];
 
 // ═════════ L0 공장 정문 ═════════
 function renderGate(app) {
   app.innerHTML = `
   <main id="main">
     <section class="gate" aria-label="DBTB 공장 정문">
-      <div class="tagline"><div class="brand">DON'T BUY THE BOOK · BRAIN FACTORY</div><p>책은 문제의 해결이 아니라 새로운 질문의 시작</p></div>
-      <div class="building" role="img" aria-label="창문 없는 대형 벽돌 공장. 외벽에 DBTB라고 페인트로 쓰여 있다.">
-        <div class="roofline"></div>
-        <div class="stack s1">${prefersReduced() ? '' : '<div class="smoke"></div>'}</div>
-        <div class="stack s2"></div>
-        <p class="logo-wall" aria-hidden="true">DBTB</p>
-        <div class="door-wrap">
-          <span class="enter-label">공장 입장</span>
-          <div class="lamp"></div>
-          <button class="door" type="button" data-enter aria-label="공장 입장"></button>
-        </div>
+      <div class="backdrop" style="background-image:url(${img('gate')})"></div>
+      <div class="stage">
+        <img src="${img('gate')}" alt="비 내린 마당 앞의 대형 벽돌 공장. 외벽에 흰 페인트로 DBTB라고 쓰여 있고, 가운데 철문 위에 등이 켜져 있다." fetchpriority="high" />
+        <div class="tagline"><div class="brand">DON'T BUY THE BOOK · BRAIN FACTORY</div><p>책은 문제의 해결이 아니라 새로운 질문의 시작</p></div>
+        <button class="door-hot" type="button" data-enter aria-label="철문을 열고 공장 입장"></button>
+        <button class="enter-tag" type="button" data-enter>공장 입장 →</button>
       </div>
-      <div class="ground"></div>
     </section>
     <section class="gate-about">
       <div class="inner">
         <h1 class="sr-only">DBTB — DON'T BUY THE BOOK</h1>
         <h2>“그 책 한 권을 해결책으로 단정하지 마라.”</h2>
         <p>DBTB는 먼저 <b>만들고 싶은 것</b>을 설계하고, 책·논문·전자책·영상·문화콘텐츠·뉴스를 원재료로 넣어 여러 분석설비와 대화형 사고 실험실에서 가공하는 지식가공공장입니다. 결과는 버전별 프로토타입으로 보존되고, 최종적으로 외부 AI가 바로 제작할 수 있는 설계 패키지로 출고됩니다.</p>
+        <figure class="line-photo"><img src="${img('production-line')}" alt="생산라인: 01 프로젝트 설정, 02 처리 작업, 03 프로토타입, 04 최종 결과 순으로 상자가 컨베이어를 따라 이동한다." loading="lazy" /></figure>
         <ol class="steps">
           <li><b>01 설계</b>무엇을 만들고 싶은가</li>
           <li><b>02 투입</b>여섯 종류의 지식 원재료</li>
@@ -326,7 +352,7 @@ async function renderMaterials(el, project) {
   const mats = await api('GET', `/api/projects/${project.id}/materials`);
   const draftKey = `dbtb-mat-${project.id}`;
   let type = ls.get(`${draftKey}-type`, 'book');
-  el.innerHTML = `${head('P2', '원재료 보관함', '책만이 아니라 모든 지식이 가공됩니다. 종류가 다른 재료를 여러 개 섞어 넣으세요.')}
+  el.innerHTML = `${head('P2', '원재료 보관함', '선반을 눌러 원재료 종류를 고르세요. 책만이 아니라 모든 지식이 가공됩니다.', { scene: `<div class="hots">${hotspots(SHELF_SPOTS, 'data-shelf', { selected: type })}</div>` })}
     <div class="mat-tabs" role="tablist" aria-label="원재료 종류">${Object.entries(materialTypes).map(([k, t]) => `<button class="mat-tab" role="tab" data-type="${k}" aria-selected="${k === type}"><span class="ic" aria-hidden="true">${t.icon}</span>${t.label}</button>`).join('')}</div>
     <div class="grid c2" style="align-items:start">
       <form class="panel plate" id="mat-form" novalidate></form>
@@ -410,11 +436,14 @@ async function renderMaterials(el, project) {
       route();
     } catch (err) { toast(err.message, true); }
   });
-  $$('.mat-tab', el).forEach((b) => b.addEventListener('click', () => {
-    type = b.dataset.type; ls.set(`${draftKey}-type`, type);
-    $$('.mat-tab', el).forEach((x) => x.setAttribute('aria-selected', String(x === b)));
+  const pickType = (t) => {
+    type = t; ls.set(`${draftKey}-type`, type);
+    $$('.mat-tab', el).forEach((x) => x.setAttribute('aria-selected', String(x.dataset.type === t)));
+    $$('[data-shelf]', el).forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.shelf === t)));
     draw();
-  }));
+  };
+  $$('.mat-tab', el).forEach((b) => b.addEventListener('click', () => pickType(b.dataset.type)));
+  $$('[data-shelf]', el).forEach((b) => b.addEventListener('click', () => { clank(); pickType(b.dataset.shelf); $('#mat-form', el).scrollIntoView({ behavior: prefersReduced() ? 'auto' : 'smooth', block: 'start' }); }));
   $$('[data-del]', el).forEach((b) => b.addEventListener('click', async () => {
     if (!(await confirmBox('이 원재료를 삭제할까요?', '기존 프로토타입은 보존되며 “근거 자료 삭제됨”으로 표시됩니다.'))) return;
     try { await api('DELETE', `/api/materials/${b.dataset.del}`); route(); } catch (err) { toast(err.message, true); }
@@ -435,7 +464,7 @@ async function renderTools(el, project, { query }) {
   if (source && !protos.some((p) => p.id === source)) source = '';
   const tools = CATALOG.tools;
   const ordered = [...rec.tool_ids.map((id) => tools.find((t) => t.id === id)), ...tools.filter((t) => !rec.tool_ids.includes(t.id))];
-  el.innerHTML = `${head('P3', '가공설비실', '설비를 고르고 레버를 끝까지 당기면 가동됩니다. 재가공은 덮어쓰지 않고 새 버전을 만듭니다.')}
+  el.innerHTML = `${head('P3', '가공설비실', '기계를 눌러 설비를 고르고, 아래 레버를 끝까지 당기면 가동됩니다. 재가공은 새 버전으로 저장됩니다.', { scene: `<div class="hots">${hotspots(HALL_SPOTS, 'data-machine', { selected, rec: rec.tool_ids })}</div>` })}
     ${!mats.length ? `<div class="notice" style="margin-bottom:12px">원재료가 없습니다. 지금 가동하면 결과는 모두 “가정 기반 시뮬레이션”으로 표시됩니다. <a href="#/p/${project.id}/materials">원재료 추가하기</a></div>` : ''}
     <section class="panel"><div class="spread"><h2>AI 공장장 추천</h2><span class="small muted">프로젝트 목표·재료를 보고 고른 3종</span></div>
       <div class="grid c3">${ordered.map((t) => `<button class="tool-card" type="button" data-tool="${t.id}" aria-pressed="${t.id === selected}">${rec.tool_ids.includes(t.id) ? '<span class="badge brass rec">추천</span>' : ''}<div class="name">${esc(t.name)}</div><div class="out">${esc(t.output)}</div><div class="small muted">입력: ${esc(t.input)}</div></button>`).join('')}</div>
@@ -470,9 +499,11 @@ async function renderTools(el, project, { query }) {
   const setSel = (id) => {
     selected = id; ls.set(selKey, id);
     $$('.tool-card', el).forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.tool === id)));
+    $$('[data-machine]', el).forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.machine === id)));
     $('#sel-name', el).textContent = `설비: ${tools.find((t) => t.id === id)?.name || '-'}`;
   };
   $$('.tool-card', el).forEach((c) => c.addEventListener('click', () => setSel(c.dataset.tool)));
+  $$('[data-machine]', el).forEach((c) => c.addEventListener('click', () => { clank(); setSel(c.dataset.machine); $('#machine', el).scrollIntoView({ behavior: prefersReduced() ? 'auto' : 'smooth', block: 'center' }); }));
   setSel(selected);
 
   const machine = $('#machine', el), readout = $('#readout', el), gauge = $('#gauge', el), after = $('#after', el);

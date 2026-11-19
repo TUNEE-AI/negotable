@@ -115,60 +115,31 @@ textarea { min-height: 96px; resize: vertical; }
 .notice.warn { border-color: var(--burgundy); background: #f6ecec; }
 .error-box { padding: 10px 14px; border-left: 4px solid var(--burgundy); background: #f6ecec; border-radius: 4px; }
 
-/* ═════════ L0 랜딩 — 공장 정문 ═════════ */
-.gate {
-  position: relative; min-height: 100vh; min-height: 100svh; overflow: hidden;
-  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-  background: linear-gradient(#d9d6d0 0%, #cbc7bf 55%, #9f9a91 100%);
-}
-.gate::before { /* 흐린 하늘 */
-  content: ''; position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 30% 10%, rgba(255,255,255,.55), transparent 60%);
-}
-.gate .building {
-  position: relative; width: min(1100px, 94vw); height: min(72vh, 640px);
-  background-color: #8f8378;
-  background-image: linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.22)), radial-gradient(ellipse at 50% 30%, rgba(255,255,255,.12), transparent 70%), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='48'%3E%3Crect width='64' height='48' fill='%23cfc8bc'/%3E%3Cg fill='%238f8378'%3E%3Crect x='1.5' y='1.5' width='29' height='21'/%3E%3Crect x='33.5' y='1.5' width='29' height='21' fill='%23968a7f'/%3E%3Crect x='-14.5' y='25.5' width='29' height='21' fill='%23877b70'/%3E%3Crect x='17.5' y='25.5' width='29' height='21'/%3E%3Crect x='49.5' y='25.5' width='29' height='21' fill='%23877b70'/%3E%3C/g%3E%3C/svg%3E");
-  background-size: auto, auto, 64px 48px;
-  filter: saturate(0.3) brightness(1.04);
-  box-shadow: 0 -2px 0 #6e655c inset, 0 30px 60px rgba(0,0,0,.25);
-}
-.gate .roofline { position: absolute; top: -18px; left: -12px; right: -12px; height: 22px; background: #5f5850; box-shadow: 0 4px 0 #4b4540; }
-.gate .stack { position: absolute; bottom: 100%; width: 54px; height: 140px; background: linear-gradient(90deg, #6f655c, #85796e 50%, #6f655c); }
-.gate .stack.s1 { left: 12%; height: 170px; }
-.gate .stack.s2 { right: 16%; height: 120px; }
-.gate .stack::after { content: ''; position: absolute; top: -10px; left: -6px; right: -6px; height: 12px; background: #4e4741; }
-.gate .smoke { position: absolute; bottom: 100%; left: 50%; width: 60px; height: 60px; border-radius: 50%; background: rgba(240,238,234,.55); filter: blur(10px); transform: translateX(-50%); animation: smoke 9s ease-out infinite; }
-@keyframes smoke { from { opacity: .0; transform: translate(-50%, 0) scale(.6); } 20% { opacity: .7; } to { opacity: 0; transform: translate(-20%, -140px) scale(2.2); } }
-.gate .logo-wall {
-  position: absolute; top: 9%; left: 50%; transform: translateX(-50%);
-  font-family: var(--font-logo); font-weight: 700; color: #ece6da; letter-spacing: 0.04em;
-  font-size: clamp(5rem, 19vw, 15rem); line-height: 1; filter: url(#worn-paint); opacity: .96;
-  text-shadow: 0 0 1px rgba(0,0,0,.2); user-select: none; margin: 0;
-}
-.gate .door-wrap { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; }
-.gate .lamp { width: 18px; height: 10px; border-radius: 0 0 10px 10px; background: #3d3833; margin-bottom: 10px; box-shadow: 0 12px 30px 10px rgba(255, 222, 160, .35); }
-.gate .door {
-  position: relative; width: 92px; height: 150px; border: 0; padding: 0; cursor: pointer;
-  background: linear-gradient(90deg, #3c3833, #4e4842 50%, #3c3833);
-  border-radius: 46px 46px 0 0; box-shadow: 0 0 0 8px #6d645b, inset 0 0 0 3px #2f2b27;
-  transition: transform .2s ease, box-shadow .2s;
-}
-.gate .door::after { content: ''; position: absolute; right: 16px; top: 82px; width: 8px; height: 8px; border-radius: 50%; background: var(--brass); }
-.gate .door:hover, .gate .door:focus-visible { box-shadow: 0 0 0 8px #6d645b, inset 0 0 0 3px #2f2b27, 0 0 40px rgba(255, 220, 160, .45); }
-.gate .enter-label {
-  position: absolute; bottom: 168px; left: 50%; transform: translateX(-50%);
-  background: rgba(35,33,31,.82); color: #f1ece2; padding: 6px 14px; border-radius: 4px; font-weight: 700; white-space: nowrap;
-  font-size: .95rem; pointer-events: none;
-}
-.gate .ground { position: relative; width: 100%; height: 36px; background: #6c665e; }
+/* ═════════ L0 랜딩 — 공장 정문 (사진) ═════════ */
+.gate { position: relative; overflow: hidden; background: #221d18; display: flex; justify-content: center; }
+.gate .backdrop { position: absolute; inset: -40px; background-size: cover; background-position: center; filter: blur(22px) brightness(.5) saturate(.8); }
+.gate .stage { position: relative; width: min(100%, calc(100svh * 1.3333), 1448px); aspect-ratio: 1448 / 1086; }
+.gate .stage > img { display: block; width: 100%; height: 100%; }
 .gate .tagline {
-  position: absolute; z-index: 2; top: 18px; left: 0; right: 0; text-align: center; color: var(--charcoal);
-  padding: 0 16px;
+  position: absolute; top: 2.5%; left: 0; right: 0; text-align: center; color: #f3ecdf; padding: 0 16px;
+  text-shadow: 0 1px 2px rgba(0,0,0,.7), 0 0 18px rgba(0,0,0,.6);
 }
-.gate .tagline .brand { font-family: var(--font-mono); font-size: .8rem; letter-spacing: .3em; }
-.gate .tagline p { margin: 2px 0 0; font-size: clamp(.95rem, 2.4vw, 1.1rem); font-weight: 500; }
-.gate .quick-enter { position: absolute; z-index: 3; right: 16px; bottom: 50px; }
+.gate .tagline .brand { font-family: var(--font-mono); font-size: clamp(.62rem, 1.4vw, .82rem); letter-spacing: .28em; }
+.gate .tagline p { margin: 2px 0 0; font-size: clamp(.9rem, 2.2vw, 1.15rem); font-weight: 500; }
+.gate .door-hot {
+  position: absolute; left: 45.6%; top: 52.5%; width: 11%; height: 15.8%; border: 0; border-radius: 3px; cursor: pointer;
+  background: radial-gradient(ellipse at 50% 30%, rgba(255, 214, 150, .18), transparent 70%);
+  transition: box-shadow .25s, background .25s;
+}
+.gate .door-hot:hover, .gate .door-hot:focus-visible { background: radial-gradient(ellipse at 50% 30%, rgba(255, 214, 150, .42), rgba(255, 214, 150, .08) 75%); box-shadow: 0 0 0 2px var(--brass-2), 0 0 50px rgba(255, 210, 140, .55); outline: none; }
+.gate .enter-tag {
+  position: absolute; left: 51.1%; top: 71%; transform: translateX(-50%); white-space: nowrap; cursor: pointer;
+  padding: clamp(6px, 1vw, 10px) clamp(14px, 2vw, 22px); border-radius: 4px; font-weight: 700; font-size: clamp(.85rem, 1.6vw, 1.05rem);
+  color: #231a0c; background: linear-gradient(#d6b57b, var(--brass)); border: 1px solid #7c6236; box-shadow: 0 6px 18px rgba(0,0,0,.45);
+}
+.gate .enter-tag:hover { filter: brightness(1.08); }
+.line-photo { margin: 20px 0 0; border-radius: 8px; overflow: hidden; border: 1px solid #55524d; }
+.line-photo img { display: block; width: 100%; height: auto; }
 .gate-about { background: var(--charcoal); color: var(--paper); padding: 56px 16px; }
 .gate-about .inner { max-width: 1040px; margin: 0 auto; }
 .gate-about h2 { color: var(--brass-2); }
@@ -213,6 +184,28 @@ textarea { min-height: 96px; resize: vertical; }
 .room { padding: 24px clamp(16px, 3vw, 40px) 64px; max-width: 1180px; width: 100%; min-width: 0; }
 .room-next { display: flex; justify-content: flex-end; margin-top: 20px; }
 .room-head { margin-bottom: 18px; }
+/* 작업실 장면 배너 */
+.room-head.has-art { position: relative; min-height: clamp(170px, 22vw, 260px); border-radius: 10px; overflow: hidden; display: flex; align-items: flex-end; color: #f3ecdf; background: #2b2520; box-shadow: 0 4px 16px rgba(0,0,0,.18); }
+.room-head.has-art .art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.room-head.has-art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,16,12,0) 35%, rgba(20,16,12,.82) 100%); pointer-events: none; }
+.room-head.has-art .cap { position: relative; z-index: 2; padding: 18px clamp(16px, 2.4vw, 26px); pointer-events: none; }
+.room-head.has-art .code { color: var(--brass-2); }
+.room-head.has-art p { color: #ddd3c2; max-width: 62ch; }
+/* 장면 전체를 보여주고 클릭 영역을 얹는 방 (원재료 창고·가공설비실) */
+.room-head.scene { display: block; min-height: 0; aspect-ratio: 1672 / 941; }
+.room-head.scene .art { object-position: 50% 50% !important; }
+.room-head.scene::after { background: linear-gradient(180deg, rgba(20,16,12,0) 72%, rgba(20,16,12,.85) 100%); }
+.room-head.scene .cap { position: absolute; left: 0; right: 0; bottom: 0; padding-block: 10px 14px; }
+.room-head.scene .cap h1 { font-size: clamp(1.1rem, 2.4vw, 1.7rem); }
+.room-head.scene .cap p { font-size: clamp(.78rem, 1.4vw, .95rem); margin: 0; }
+.hots { position: absolute; inset: 0; z-index: 3; }
+.hot { position: absolute; border: 2px solid transparent; border-radius: 8px; background: transparent; cursor: pointer; padding: 0; transition: border-color .2s, box-shadow .2s, background .2s; }
+.hot:hover, .hot:focus-visible { border-color: var(--brass-2); background: rgba(255, 220, 160, .1); outline: none; }
+.hot[aria-pressed=true] { border-color: #f1d08f; background: rgba(255, 220, 160, .14); box-shadow: 0 0 0 3px rgba(0,0,0,.35), 0 0 36px rgba(255, 210, 140, .55); }
+.hot .tag { position: absolute; top: -10px; right: 6px; padding: 1px 8px; border-radius: 999px; font-size: .72rem; font-weight: 700; color: #231a0c; background: var(--brass-2); box-shadow: 0 2px 6px rgba(0,0,0,.4); }
+.hot .hot-label { position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%); padding: 1px 8px; border-radius: 4px; font-size: .75rem; color: #f3ecdf; background: rgba(20,16,12,.78); white-space: nowrap; opacity: 0; transition: opacity .2s; }
+.hot:hover .hot-label, .hot:focus-visible .hot-label, .hot[aria-pressed=true] .hot-label { opacity: 1; }
+@media (max-width: 600px) { .hot .hot-label, .hot .tag { font-size: .62rem; } .room-head.scene .cap p { display: none; } }
 .room-head .code { font-family: var(--font-mono); font-size: .78rem; color: var(--ink-2); letter-spacing: .1em; }
 .room-head h1 { font-size: clamp(1.4rem, 3vw, 1.9rem); margin: 0; }
 .room-head p { margin: 4px 0 0; color: var(--ink-2); }
@@ -348,10 +341,7 @@ pre.prompt { white-space: pre-wrap; word-break: break-word; background: #1f1e1c;
   .grid.c2, .grid.c3 { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 520px) {
-  .gate .building { height: 64vh; width: 100vw; }
-  .gate .stack.s2 { display: none; }
-  .gate .logo-wall { top: 12%; }
-  .gate .tagline .brand { letter-spacing: .12em; font-size: .72rem; }
+  .gate .tagline .brand { letter-spacing: .12em; }
   .topbar .engine-badge { display: none; }
   .msg { max-width: 94%; }
 }
