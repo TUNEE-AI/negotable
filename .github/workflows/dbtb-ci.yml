@@ -1,0 +1,40 @@
+name: DBTB Factory Tests
+on:
+  push:
+    branches:
+      - 'claude/happy-ramanujan-hbebne'
+      - main
+    paths:
+      - 'dbtb-factory/**'
+      - '.github/workflows/dbtb-ci.yml'
+  pull_request:
+    paths:
+      - 'dbtb-factory/**'
+      - '.github/workflows/dbtb-ci.yml'
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dbtb-factory
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: dbtb-factory/package-lock.json
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Check JavaScript syntax
+        run: |
+          node --check app.js
+          node --check server.js
+          node --check lib/api.js
+          node --check lib/store.js
+          node --check public/app.js
+          node --check public/wall.js
+          node --check public/icons.js
+      - name: Run automated API tests
+        run: npm test
