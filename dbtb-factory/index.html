@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#24211e">
+<title>DBTB — Brain Factory</title>
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<header class="top"><a href="#home" class="brand">DBTB <span>THE BRAIN FACTORY</span></a><nav><button data-view="home">공장 정문</button><button data-view="project">설계실</button><button data-view="machine">가공설비</button><button data-view="archive">시제품</button><button data-view="warehouse">완제품 창고</button></nav><span id="status" class="status">FACTORY ONLINE</span></header>
+<main>
+<section id="home" class="view active">
+  <div class="hero"><p class="overline">DBTB-FACTORY.COM · KNOWLEDGE PROCESSING WORKS</p><h1>DBTB</h1><p>DON'T BUY THE BOOK</p><div class="factory-door">▣</div><button class="big-cta" data-view="project">공장 입장하기 →</button></div>
+  <div class="intro"><h2>책은 원재료. 생각은 완제품.</h2><p>만들고 싶은 프로젝트부터 설계하세요. 책·논문·영상·뉴스의 지식을 원하는 관점으로 가공합니다.</p></div>
+</section>
+<section id="project" class="view">
+ <div class="page-head"><span class="number">01</span><div><p class="overline">PROJECT DESIGN OFFICE</p><h2>프로젝트 설계실</h2><p>무엇을 만들고 싶은지 먼저 정하세요.</p></div></div>
+ <div class="panel"><label>프로젝트 아이템 이름<input id="projectName" placeholder="예: 단골 고객 재방문 전략"></label><label>만들고 싶은 결과 · 해결할 문제<textarea id="projectGoal" rows="3" placeholder="무엇을 이루고 싶나요?"></textarea></label><button id="saveProject" class="metal-btn">작업지시서 저장</button></div>
+ <h3>지식 원재료 투입</h3><div id="sourceTypes" class="tiles"></div><div class="panel"><div id="sourceFields"></div><button id="addSource" class="metal-btn">+ 원재료 적재</button><div id="sourceList" class="chips"></div></div>
+ <div class="next"><button data-view="machine" class="metal-btn">가공설비실로 이동 →</button></div>
+</section>
+<section id="machine" class="view">
+ <div class="page-head"><span class="number">02</span><div><p class="overline">PROCESSING EQUIPMENT HALL</p><h2>가공설비실</h2><p>대중적인 분석법을 고르고 레버를 당겨 가동하세요.</p></div></div>
+ <div id="recommendations" class="notice"></div><div id="machines" class="machine-grid"></div>
+ <div class="control"><div><p class="overline">MECHANICAL CONTROL</p><h3>선택한 가공설비 <span id="selectedMachine">없음</span></h3><p>레버를 아래로 당기면 1차 또는 다음 시제품을 생성합니다.</p></div><div class="lever-unit"><span>READY</span><div id="leverTrack" class="lever-track" tabindex="0" role="slider" aria-label="가공설비 가동 레버" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="leverHandle" class="lever-handle" aria-hidden="true"></div></div><span>RUN</span><button id="runFallback" class="small-btn">클릭으로 가동</button></div></div>
+ <h3>특별 AI 사고 실험실</h3><div class="special-grid"><button data-room="masks" class="special"><strong>8 MASKS</strong><span>여덟 가면 다자간 대화</span></button><button data-room="sharks" class="special"><strong>SHARK PANEL</strong><span>AI 압박 심사 대화</span></button><button data-room="debate" class="special"><strong>BRAINSTORM</strong><span>다중 관점 브레인스토밍</span></button></div>
+</section>
+<section id="room" class="view">
+ <div class="page-head"><span class="number">★</span><div><p class="overline">SPECIAL CONVERSATION CHAMBER</p><h2 id="roomTitle">사고 실험실</h2><p>진짜 AI 연결 전에도 대화 흐름을 확인할 수 있습니다.</p></div></div>
+ <div id="roomChat" class="chat" aria-live="polite"></div><form id="roomForm" class="chat-input"><input id="roomInput" placeholder="내 생각이나 반론을 입력하세요"><button class="metal-btn">발언</button></form><button id="roomPrototype" class="small-btn">회의록을 시제품으로 저장</button>
+</section>
+<section id="archive" class="view">
+ <div class="page-head"><span class="number">03</span><div><p class="overline">PROTOTYPE ARCHIVE</p><h2>시제품 보관소</h2><p>1차 결과를 보존한 채 다른 관점으로 재가공하세요.</p></div></div><div id="prototypeList" class="prototype-list"></div>
+ <div class="panel"><h3>공장장 검수</h3><p>어떤 생각이 달라졌나요? 다음 가공을 결정할 수 있어요.</p><textarea id="reflection" rows="3" placeholder="가공 후 바뀐 생각, 추가 조건 (선택)"></textarea><button id="saveReflection" class="metal-btn">생각 기록</button><div class="action-row"><button data-view="machine" class="small-btn">↻ 다른 설비로 재가공</button><button data-view="warehouse" class="small-btn">최종 생산 설계 →</button></div></div>
+</section>
+<section id="warehouse" class="view">
+ <div class="page-head"><span class="number">04</span><div><p class="overline">FINAL ASSEMBLY & WAREHOUSE</p><h2>최종 생산실 · 창고</h2><p>선택한 시제품을 개인 스킬로 정리하고 외부 전문 AI에 넘깁니다.</p></div></div>
+ <div class="panel"><label>완제품 이름<input id="outputName" placeholder="예: 외식 브랜드 사업전략서"></label><label>생산 방식<select id="outputType"><option value="문서">문서 · 기획서</option><option value="PPT">PPT · 발표자료</option><option value="영상">영상 기획</option><option value="팟캐스트">팟캐스트 기획</option><option value="분석">데이터·전략 분석</option></select></label><label>나만의 마무리 스킬<textarea id="personalSkill" rows="3" placeholder="예: 투자자에게 설득력 있게, 수치 가정을 구분해서 작성해줘"></textarea></label><div class="action-row"><button id="saveSkill" class="small-btn">개인 스킬 기억</button><button id="buildOutput" class="metal-btn">최종 정리문서 생산</button></div></div>
+ <div id="finalOutput" class="panel" hidden><h3>외부 제작용 정리문서</h3><pre id="outputPreview"></pre><div class="action-row"><button id="copyOutput" class="metal-btn">제작 패키지 복사</button><button id="downloadOutput" class="small-btn">TXT 저장</button></div><div class="platforms"><a href="https://chatgpt.com/" target="_blank" rel="noopener">ChatGPT ↗</a><a href="https://gemini.google.com/" target="_blank" rel="noopener">Gemini ↗</a><a href="https://claude.ai/" target="_blank" rel="noopener">Claude ↗</a><a href="https://grok.com/" target="_blank" rel="noopener">Grok ↗</a><a href="https://notebooklm.google.com/" target="_blank" rel="noopener">NotebookLM ↗</a></div><p class="muted">제작 패키지를 복사하거나 다운로드한 뒤 전문 플랫폼에 붙여넣으세요. 자동 전송은 하지 않습니다.</p></div>
+ <div id="finishedList" class="prototype-list"></div>
+</section>
+</main><footer>DBTB · BRAIN FACTORY <small>Vintage industrial prototype · 모든 작업은 현재 브라우저에만 저장됩니다.</small></footer>
+<script src="./app.js"></script>
+</body></html>
