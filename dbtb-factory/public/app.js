@@ -127,7 +127,9 @@ if (LOCAL) {
   // claude.ai 뷰어는 '#/..' 형태의 링크 클릭을 자체 처리해 화면이 바뀌지 않는다.
   // 그래서 내부 링크의 href 를 떼어 data-go 로 옮기고, 클릭·Enter 를 직접 받는다.
   const convert = (root) => {
-    root.querySelectorAll?.('a[href^="#/"]').forEach((a) => {
+    const found = [...(root.querySelectorAll?.('a[href^="#/"]') || [])];
+    if (root.matches?.('a[href^="#/"]')) found.push(root); // 추가된 노드 자신이 링크인 경우
+    found.forEach((a) => {
       a.dataset.go = a.getAttribute('href');
       a.removeAttribute('href');
       a.setAttribute('role', 'link');
@@ -249,7 +251,7 @@ const ROOM_ART = {
   P8: ['material-warehouse', '92% 55%'],
   P9: ['design-office', '6% 60%'],
 };
-const img = (name) => `images/${name}.webp`;
+const img = (name) => window.__DBTB_IMAGES?.[name] || `images/${name}.webp`;
 function head(code, title, desc, { scene = '' } = {}) {
   const art = ROOM_ART[code];
   if (!art) return `<div class="room-head"><h1>${title}</h1>${desc ? `<p>${desc}</p>` : ''}</div>`;

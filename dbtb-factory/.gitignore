@@ -3,3 +3,4 @@ node_modules/
 data/db.json
 data/*.tmp
 dist-artifact/
+dist-standalone/
