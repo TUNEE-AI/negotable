@@ -120,12 +120,26 @@ function go(path) {
   if (LOCAL) { memPath = path; route(); window.scrollTo(0, 0); } else location.hash = path;
 }
 if (LOCAL) {
-  document.addEventListener('click', (e) => {
-    const a = e.target.closest?.('a[href^="#/"]');
-    if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey) return;
+  // claude.ai 뷰어는 '#/..' 형태의 링크 클릭을 자체 처리해 화면이 바뀌지 않는다.
+  // 그래서 내부 링크의 href 를 떼어 data-go 로 옮기고, 클릭·Enter 를 직접 받는다.
+  const convert = (root) => {
+    root.querySelectorAll?.('a[href^="#/"]').forEach((a) => {
+      a.dataset.go = a.getAttribute('href');
+      a.removeAttribute('href');
+      a.setAttribute('role', 'link');
+      a.tabIndex = 0;
+    });
+  };
+  new MutationObserver((list) => list.forEach((m) => m.addedNodes.forEach((n) => n.nodeType === 1 && convert(n)))).observe(document.body, { childList: true, subtree: true });
+  const follow = (e) => {
+    const a = e.target.closest?.('[data-go]');
+    if (!a) return;
     e.preventDefault();
-    go(a.getAttribute('href'));
-  });
+    e.stopPropagation();
+    go(a.dataset.go);
+  };
+  window.addEventListener('click', follow, true);
+  window.addEventListener('keydown', (e) => { if (e.key === 'Enter') follow(e); }, true);
 }
 function confirmBox(title, body, yes = '삭제') {
   return new Promise((resolve) => {
@@ -149,6 +163,7 @@ async function route() {
     if (!parts.length) return renderGate(app);
     await catalog();
     if (parts[0] === 'projects') return shell(app, null, 'projects', renderProjects);
+    if (parts[0] === 'start' && ['tools', 'lab'].includes(parts[1])) return shell(app, null, parts[1], (el) => renderStart(el, parts[1]));
     if (parts[0] === 'warehouse') return shell(app, null, 'warehouse', (el) => (parts[1] ? renderPackage(el, parts[1]) : renderWarehouse(el)));
     if (parts[0] === 'skills') return shell(app, null, 'skills', renderSkills);
     if (parts[0] === 'p' && parts[1]) {
@@ -171,7 +186,7 @@ function shell(app, project, room, render) {
   const doneMap = { design: rank >= 1, materials: rank >= 2 || project?.counts.materials > 0, tools: project?.counts.prototypes > 0, lab: false, prototypes: project?.counts.prototypes > 0, review: rank >= 4, assembly: project?.counts.packages > 0 };
   app.innerHTML = `
     <header class="topbar">
-      <a class="mini-logo" href="#/" aria-label="DBTB 공장 정문으로">DBTB</a>
+      <a class="mini-logo" href="#/" aria-label="DON'T BUY THE BOOK 첫 화면으로"><span class="long">DON'T BUY THE BOOK</span><span class="short">DBTB</span></a>
       <span class="engine-badge ${engine === 'demo' ? 'demo' : ''}" title="${engine === 'demo' ? 'AI 키가 설정되지 않아 데모 엔진으로 동작합니다' : 'AI 엔진 연결됨'}">${engine === 'demo' ? 'DEMO ENGINE' : 'AI ENGINE'}</span>
       <nav aria-label="공장 메뉴">
         ${navLink('#/projects', '프로젝트', 'projects')}
@@ -200,8 +215,7 @@ function shell(app, project, room, render) {
     const list = await api('GET', '/api/projects').catch(() => []);
     const last = list.find((p) => p.id === ls.get('dbtb-last-project')) || list[0];
     if (last) return go(`#/p/${last.id}/${roomKey}`);
-    toast('먼저 프로젝트를 하나 만드세요. 이름과 목표만 있으면 됩니다.');
-    go('#/projects');
+    go(`#/start/${roomKey}`);
   }));
   const main = $('#main', app);
   if (!project) main.style.margin = '0 auto';
@@ -336,6 +350,33 @@ function projectFields(v = {}) {
     <label class="field"><span>최종적으로 얻고 싶은 것</span><input type="text" name="expected" maxlength="300" value="${esc(v.expected)}" placeholder="예: 직원 회의에서 발표할 실행 PPT" /></label>`;
 }
 function formData(form) { return Object.fromEntries(new FormData(form).entries()); }
+
+// 프로젝트가 없을 때 P3·P4 메뉴: 그 방을 보여주고 바로 프로젝트를 만들게 한다
+function renderStart(el, roomKey) {
+  const info = roomKey === 'tools'
+    ? ['P3', '가공설비실', 'SWOT·퍼널·린 스타트업 등 12개 설비로 프로젝트를 분석합니다. 기계를 고르고 레버를 당기면 가동됩니다.']
+    : ['P4', '특별 사고 실험실', '여덟 가면 회의, AI 샤크탱크, 유명인 관점 토론에서 아이디어를 검증합니다.'];
+  const draft = ls.get('dbtb-draft-new', {});
+  el.innerHTML = `${head(info[0], info[1], info[2])}
+    <form class="panel plate" id="start-project" novalidate>
+      <h2>먼저 프로젝트를 정하세요</h2>
+      <p class="muted" style="margin-top:-4px">무엇을 위해 가공할지 정해야 ${info[1]}이 가동됩니다. 이름과 목표만 있으면 됩니다.</p>
+      ${projectFields(draft)}
+      <div class="row"><button class="btn primary" type="submit">프로젝트 만들고 ${info[1]}로 →</button></div>
+    </form>`;
+  const form = $('#start-project', el);
+  form.addEventListener('input', () => ls.set('dbtb-draft-new', formData(form)));
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const d = formData(form);
+    if (!d.name || !d.goal) return toast('프로젝트명과 목표를 입력하세요.', true);
+    try {
+      const p = await api('POST', '/api/projects', d);
+      ls.del('dbtb-draft-new'); clank();
+      go(`#/p/${p.id}/${roomKey}`);
+    } catch (err) { toast(err.message, true); }
+  });
+}
 
 // ═════════ P1 프로젝트 설계실(편집) ═════════
 async function renderDesign(el, project) {

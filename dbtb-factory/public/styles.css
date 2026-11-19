@@ -24,7 +24,6 @@
 
   --font-ui: 'Noto Sans KR', system-ui, -apple-system, 'Apple SD Gothic Neo', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-  --font-logo: 'UnifrakturCook', 'Old English Text MT', serif;
   --font-paint: 'Alfa Slab One', 'Rockwell', 'Georgia', serif;
 
   --r: 6px;
@@ -169,7 +168,9 @@ textarea { min-height: 96px; resize: vertical; }
   padding: 8px 16px; background: var(--charcoal); color: var(--paper);
   border-bottom: 3px solid #1f1e1c;
 }
-.topbar .mini-logo { font-family: var(--font-logo); font-size: 1.8rem; color: var(--paper); text-decoration: none; line-height: 1; }
+.topbar .mini-logo { font-family: var(--font-paint); font-size: 1.15rem; letter-spacing: .02em; color: #fff; text-decoration: none; line-height: 1; cursor: pointer; white-space: nowrap; }
+.topbar .mini-logo .short { display: none; }
+@media (max-width: 760px) { .topbar .mini-logo .long { display: none; } .topbar .mini-logo .short { display: inline; } }
 .topbar nav { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }
 .topbar nav a, .topbar nav button {
   color: var(--stone-2); text-decoration: none; padding: 6px 10px; border-radius: 4px; background: none; border: 0; cursor: pointer; font-size: .9rem;
