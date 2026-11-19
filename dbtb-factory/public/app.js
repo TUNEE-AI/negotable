@@ -253,7 +253,7 @@ const img = (name) => `images/${name}.webp`;
 function head(code, title, desc, { scene = '' } = {}) {
   const art = ROOM_ART[code];
   if (!art) return `<div class="room-head"><div class="code">${code}</div><h1>${title}</h1>${desc ? `<p>${desc}</p>` : ''}</div>`;
-  return `<header class="room-head has-art ${scene ? 'scene' : ''}">
+  return `<header class="room-head has-art scene">
     <img class="art" src="${img(art[0])}" alt="" style="object-position:${art[1]}" decoding="async" />
     ${scene}
     <div class="cap"><div class="code">${code}</div><h1>${title}</h1>${desc ? `<p>${desc}</p>` : ''}</div>
