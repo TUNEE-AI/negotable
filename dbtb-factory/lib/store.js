@@ -6,7 +6,9 @@
 // ─────────────────────────────────────────────────────────────
 import fs from 'node:fs';
 import path from 'node:path';
-import crypto from 'node:crypto';
+import { newId } from './util.js';
+
+export { newId };
 
 export const COLLECTIONS = [
   'projects',
@@ -19,10 +21,6 @@ export const COLLECTIONS = [
   'final_packages',
   'external_handoffs',
 ];
-
-export function newId(prefix) {
-  return `${prefix}_${crypto.randomBytes(6).toString('hex')}`;
-}
 
 export function createStore(file) {
   let db = Object.fromEntries(COLLECTIONS.map((c) => [c, []]));

@@ -16,6 +16,13 @@ npm test               # PRD 13.1 인수 테스트(API 수준, 키 불필요)
 Node 20 이상. 배포는 `npm start` + 환경변수만 있으면 됩니다(Render/Railway/Fly 등).
 데이터는 `data/db.json`에 저장되므로 재시작 시 디스크가 지워지는 호스팅에서는 지속 디스크를 붙이세요.
 
+## 브라우저 데모판 (claude.ai 페이지)
+서버 없이 링크로 바로 볼 수 있는 데모판이 있습니다. `lib/api.js`의 같은 API 코드를 브라우저 안에서 데모 엔진으로 실행하고, 데이터는 그 브라우저의 localStorage에 저장됩니다.
+```bash
+node scripts/build-artifact.mjs   # dist-artifact/ 생성
+```
+데모판에서는 .md 다운로드와 도서 검색(외부 API 차단)이 동작하지 않습니다. 복사 버튼을 쓰세요.
+
 ## 화면 (PRD 4)
 | 코드 | 화면 | 구현 내용 |
 |---|---|---|

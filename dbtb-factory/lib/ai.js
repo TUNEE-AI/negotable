@@ -6,14 +6,9 @@
 // ─────────────────────────────────────────────────────────────
 import Anthropic from '@anthropic-ai/sdk';
 
-export class AIError extends Error {
-  constructor(message, { status = 502, retryable = false } = {}) {
-    super(message);
-    this.name = 'AIError';
-    this.status = status;
-    this.retryable = retryable;
-  }
-}
+import { AIError } from './util.js';
+
+export { AIError };
 
 /**
  * @returns {{ mock: boolean, model: string, json: (req: {system: string, user: string, schema: object, effort?: string, maxTokens?: number, tag?: string}) => Promise<{data: object, usage: object}> }}

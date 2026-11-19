@@ -25,6 +25,11 @@ document.documentElement.classList.toggle('reduce-motion', settings.reduceMotion
 // ── API ──
 class ApiError extends Error { constructor(msg, status, body) { super(msg); this.status = status; this.body = body; } }
 async function api(method, url, body, { retries = 1 } = {}) {
+  if (window.__dbtbLocal) {
+    const r = await window.__dbtbLocal(method, url, body, OWNER);
+    if (r.status >= 400) throw new ApiError(r.body?.error || `오류(${r.status})`, r.status, r.body);
+    return r.body;
+  }
   for (let attempt = 0; ; attempt++) {
     let res;
     try {
@@ -105,10 +110,36 @@ const STEPS = [
 ];
 const STATUS_ORDER = ['DRAFT', 'PROJECT_READY', 'MATERIAL_READY', 'PROTOTYPE_SAVED', 'REVIEWED', 'PROCESSING_NEW_VERSION', 'FINALIZING', 'WAREHOUSED', 'EXTERNAL_HANDOFF'];
 
+// 서버판은 주소창 해시(#/p/..)로, 브라우저 데모판(claude.ai 페이지)은 메모리로 화면을 이동한다.
+const LOCAL = Boolean(window.__dbtbLocal);
+let memPath = '#/';
+const currentPath = () => (LOCAL ? memPath : location.hash || '#/');
+function go(path) {
+  if (LOCAL) { memPath = path; route(); window.scrollTo(0, 0); } else location.hash = path;
+}
+if (LOCAL) {
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest?.('a[href^="#/"]');
+    if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey) return;
+    e.preventDefault();
+    go(a.getAttribute('href'));
+  });
+}
+function confirmBox(title, body, yes = '삭제') {
+  return new Promise((resolve) => {
+    let answered = false;
+    modal(`<h2>${esc(title)}</h2><p>${esc(body)}</p><div class="row"><button class="btn danger" data-yes>${esc(yes)}</button><button class="btn" data-dismiss>취소</button></div>`, (m, close) => {
+      $('[data-yes]', m).addEventListener('click', () => { answered = true; close(); resolve(true); });
+    });
+    const obs = new MutationObserver(() => { if (!$('#modal-root').children.length) { obs.disconnect(); if (!answered) resolve(false); } });
+    obs.observe($('#modal-root'), { childList: true });
+  });
+}
+
 let cleanup = null; // 화면 이탈 시 폴링 중단 등
 async function route() {
   cleanup?.(); cleanup = null;
-  const hash = location.hash.replace(/^#\/?/, '');
+  const hash = currentPath().replace(/^#\/?/, '');
   const parts = hash.split('?')[0].split('/').filter(Boolean);
   const query = new URLSearchParams(hash.split('?')[1] || '');
   const app = $('#app');
@@ -124,12 +155,12 @@ async function route() {
       const renderers = { design: renderDesign, materials: renderMaterials, tools: renderTools, lab: renderLab, prototypes: renderPrototypes, review: renderReview, assembly: renderAssembly };
       return shell(app, project, room, (el) => (renderers[room] || renderDesign)(el, project, { id: parts[3], query }));
     }
-    location.hash = '#/projects';
+    go('#/projects');
   } catch (err) {
     app.innerHTML = `<main id="main" class="room"><div class="error-box">${esc(err.message)}</div><p><a class="btn" href="#/projects">프로젝트 목록으로</a></p></main>`;
   }
 }
-window.addEventListener('hashchange', route);
+if (!LOCAL) window.addEventListener('hashchange', route);
 
 function shell(app, project, room, render) {
   const engine = CATALOG.engine;
@@ -212,7 +243,7 @@ function renderGate(app) {
       </div>
     </section>
   </main>`;
-  $$('[data-enter]', app).forEach((b) => b.addEventListener('click', () => { clank(); location.hash = '#/projects'; }));
+  $$('[data-enter]', app).forEach((b) => b.addEventListener('click', () => { clank(); go('#/projects'); }));
 }
 
 // ═════════ 프로젝트 목록 + P1 신규 ═════════
@@ -243,7 +274,7 @@ async function renderProjects(el) {
     try {
       const p = await api('POST', '/api/projects', d);
       ls.del('dbtb-draft-new'); clank();
-      location.hash = `#/p/${p.id}/materials`;
+      go(`#/p/${p.id}/materials`);
     } catch (err) { toast(err.message, true); }
   });
 }
@@ -271,7 +302,7 @@ async function renderDesign(el, project) {
     try { await api('PATCH', `/api/projects/${project.id}`, formData(form)); ls.del(key); toast('저장했습니다.'); route(); } catch (err) { toast(err.message, true); }
   });
   $('[data-del]', el).addEventListener('click', () => modal(`<h2>프로젝트를 삭제할까요?</h2><p>원재료·프로토타입·창고의 완제품까지 모두 삭제되며 되돌릴 수 없습니다.</p><div class="row"><button class="btn danger" data-yes>삭제</button><button class="btn" data-dismiss>취소</button></div>`, (m, close) => {
-    $('[data-yes]', m).addEventListener('click', async () => { await api('DELETE', `/api/projects/${project.id}`); close(); location.hash = '#/projects'; });
+    $('[data-yes]', m).addEventListener('click', async () => { await api('DELETE', `/api/projects/${project.id}`); close(); go('#/projects'); });
   }));
 }
 
@@ -371,7 +402,7 @@ async function renderMaterials(el, project) {
     draw();
   }));
   $$('[data-del]', el).forEach((b) => b.addEventListener('click', async () => {
-    if (!confirm('이 원재료를 삭제할까요? 기존 프로토타입은 보존되며 “근거 자료 삭제됨”으로 표시됩니다.')) return;
+    if (!(await confirmBox('이 원재료를 삭제할까요?', '기존 프로토타입은 보존되며 “근거 자료 삭제됨”으로 표시됩니다.'))) return;
     try { await api('DELETE', `/api/materials/${b.dataset.del}`); route(); } catch (err) { toast(err.message, true); }
   }));
   draw();
@@ -552,7 +583,6 @@ async function renderPrototypes(el, project) {
     modal(`<div class="spread"><h2>버전 비교</h2><button class="btn sm" data-dismiss>닫기</button></div><div class="compare">${[a, b].map((p) => `<div><h3>${esc(p.version_label)} · ${esc(p.tool_name)}</h3>${protoDoc(p, { compact: true })}</div>`).join('')}</div>`);
     $('.modal').style.width = 'min(1000px, 100%)';
   });
-  if (location.hash.includes('#') && protos.length) { /* noop */ }
 }
 
 // ═════════ P6 공장장 검수실 ═════════
@@ -577,13 +607,13 @@ async function renderReview(el, project, { id }) {
         <form class="chat-input" id="chat-form"><textarea name="text" placeholder="공장장에게 말하기" maxlength="2000" aria-label="공장장에게 보낼 메시지"></textarea><button class="btn primary">보내기</button></form>
       </section>
     </div>`;
-    $('#pick', el).addEventListener('change', (e) => { location.hash = `#/p/${project.id}/review/${e.target.value}`; });
+    $('#pick', el).addEventListener('change', (e) => { go(`#/p/${project.id}/review/${e.target.value}`); });
     $$('[data-opt]', el).forEach((b) => b.addEventListener('click', async () => {
       try {
         const r = await api('POST', `/api/review-sessions/${session.id}/choose`, { option_id: b.dataset.opt });
         clank();
         const dest = { tools: `tools?source=${proto.id}`, lab: `lab?source=${proto.id}`, prototypes: 'prototypes', assembly: `assembly?proto=${proto.id}` }[r.next];
-        location.hash = `#/p/${project.id}/${dest}`;
+        go(`#/p/${project.id}/${dest}`);
       } catch (err) { toast(err.message, true); }
     }));
     const f = $('#chat-form', el);
@@ -629,9 +659,9 @@ async function renderLab(el, project, { id, query }) {
         const btn = $('button.primary', f); btn.disabled = true; btn.textContent = '참가자 입장 중…';
         try {
           const c = await api('POST', '/api/conversations', { project_id: project.id, lab_id: lab.id, topic: f.topic.value, source_prototype_id: f.source.value || null, pitch: f.pitch?.value || '', personas });
-          close(); location.hash = `#/p/${project.id}/lab/${c.id}`;
+          close(); go(`#/p/${project.id}/lab/${c.id}`);
         } catch (err) {
-          if (err.body?.conversation) { close(); toast(err.message, true); location.hash = `#/p/${project.id}/lab/${err.body.conversation.id}`; return; }
+          if (err.body?.conversation) { close(); toast(err.message, true); go(`#/p/${project.id}/lab/${err.body.conversation.id}`); return; }
           toast(err.message, true); btn.disabled = false; btn.textContent = '시작';
         }
       });
@@ -664,7 +694,7 @@ async function renderConversation(el, project, id) {
     });
     $('#sum', el)?.addEventListener('click', async (e) => {
       e.target.disabled = true; e.target.textContent = '요약 중…';
-      try { const r = await api('POST', `/api/conversations/${c.id}/summary`); clank('done'); toast(`${r.prototype.version_label}로 저장했습니다.`); location.hash = `#/p/${project.id}/review/${r.prototype.id}`; } catch (err) { toast(err.message, true); e.target.disabled = false; e.target.textContent = '요약 리포트 → 프로토타입 저장'; }
+      try { const r = await api('POST', `/api/conversations/${c.id}/summary`); clank('done'); toast(`${r.prototype.version_label}로 저장했습니다.`); go(`#/p/${project.id}/review/${r.prototype.id}`); } catch (err) { toast(err.message, true); e.target.disabled = false; e.target.textContent = '요약 리포트 → 프로토타입 저장'; }
     });
     $('#end', el)?.addEventListener('click', async () => { c = await api('POST', `/api/conversations/${c.id}/end`); draw(); });
   };
@@ -701,7 +731,7 @@ async function renderAssembly(el, project, { query }) {
     try {
       const fp = await api('POST', '/api/final-packages', { prototype_id: f.proto, custom_skill_id: f.skill || null, format: f.format, final_name: f.name, idempotency_key: ikey }, { retries: 2 });
       ls.del(key); clank('done'); toast('완제품 창고에 입고되었습니다.');
-      location.hash = `#/warehouse/${fp.id}`;
+      go(`#/warehouse/${fp.id}`);
     } catch (err) { toast(err.message, true); btn.disabled = false; $('#asm-status', el).textContent = ''; }
   });
 }
@@ -732,7 +762,7 @@ async function renderPackage(el, id) {
   el.innerHTML = `${head('P8', esc(fp.final_name), `${esc(k.format_label)} 제작 패키지 · ${esc(fp.project_name)} · 기준 ${esc(fp.prototype_label)}`)}
     ${k.engine === 'demo' ? '<div class="notice warn" style="margin-bottom:12px">데모 엔진으로 생성된 구조 예시입니다. 서버에 ANTHROPIC_API_KEY를 설정하면 실제 AI가 작성합니다.</div>' : ''}
     <section class="panel plate"><div class="spread"><h2>외부 AI로 가져가기</h2><span class="small muted">DBTB는 외부 서비스에 자동 제출하거나 제작 완료를 보장하지 않습니다.</span></div>
-      <div class="row"><button class="btn brass" id="handoff">복사하고 외부 AI 열기 →</button><button class="btn" id="cp-prompt">제작 지시문 복사</button><button class="btn" id="cp-all">전체 패키지 복사</button><a class="btn" id="dl" href="#">⬇ .md 다운로드</a><a class="btn ghost" href="#/p/${fp.project_id}/tools?source=${fp.prototype_id}">다시 가공</a></div>
+      <div class="row"><button class="btn brass" id="handoff">복사하고 외부 AI 열기 →</button><button class="btn" id="cp-prompt">제작 지시문 복사</button><button class="btn" id="cp-all">전체 패키지 복사</button>${LOCAL ? '' : '<a class="btn" id="dl" href="#">⬇ .md 다운로드</a>'}<a class="btn ghost" href="#/p/${fp.project_id}/tools?source=${fp.prototype_id}">다시 가공</a></div>
     </section>
     <section class="panel"><h2>외부 AI 제작 지시문</h2><pre class="prompt">${esc(k.production_prompt)}</pre></section>
     <div class="grid c2" style="margin-top:16px;align-items:start">
@@ -749,7 +779,7 @@ async function renderPackage(el, id) {
   md().then((t) => { mdCache = t; }).catch(() => {});
   $('#cp-prompt', el).addEventListener('click', async () => toast((await copyText(k.production_prompt)) ? '제작 지시문을 복사했습니다.' : '복사하지 못했습니다.', false));
   $('#cp-all', el).addEventListener('click', async () => toast((await copyText(mdCache || (await md()))) ? '전체 패키지를 복사했습니다.' : '복사하지 못했습니다.'));
-  $('#dl', el).addEventListener('click', async (e) => {
+  $('#dl', el)?.addEventListener('click', async (e) => {
     e.preventDefault();
     const text = mdCache || (await md());
     const a = document.createElement('a');
@@ -774,21 +804,24 @@ function openHandoff(fp, getMd) {
       ${k.sensitive_warnings?.length ? `<div class="notice warn">⚠ 패키지에서 민감정보로 보이는 내용이 감지되었습니다: <b>${esc(k.sensitive_warnings.join(', '))}</b>. 붙여넣기 전에 지우세요.</div>` : ''}
       <label class="check"><input type="checkbox" name="sensitive" required/> <span>개인정보·비밀번호·주민번호 등 민감정보가 포함되지 않았음을 확인했습니다.</span></label>
       <label class="field" style="margin-top:10px"><span>복사할 내용</span><select name="what"><option value="prompt">제작 지시문만</option><option value="all">전체 패키지(지시문+정리문서+근거)</option></select></label>
-      <p class="small muted">서비스를 누르면 내용을 클립보드에 복사하고 공식 사이트를 새 탭으로 엽니다. 붙여넣기(Ctrl/⌘+V)는 직접 하세요.</p>
-      <div class="providers">${CATALOG.providers.map((p) => `<button type="button" class="btn" data-p="${p.id}" disabled title="${esc(p.note)}">${esc(p.name)} ↗</button>`).join('')}</div>
+      <p class="small muted">두 확인란에 체크한 뒤 서비스를 누르면 내용을 클립보드에 복사하고 공식 사이트를 새 탭으로 엽니다. 붙여넣기(Ctrl/⌘+V)는 직접 하세요.</p>
+      <div class="providers" id="provs" aria-disabled="true">${CATALOG.providers.map((p) => `<a class="btn" data-p="${p.id}" href="${esc(p.url)}" target="_blank" rel="noopener noreferrer" title="${esc(p.note)}">${esc(p.name)} ↗</a>`).join('')}</div>
       <p class="small muted" id="pnote"></p>
       <div class="row"><button type="button" class="btn ghost" data-dismiss>닫기</button></div>
     </form>`, (m) => {
     const f = $('#ho', m);
-    const sync = () => $$('[data-p]', f).forEach((b) => { b.disabled = !(f.rights.checked && f.sensitive.checked); });
+    const ready = () => f.rights.checked && f.sensitive.checked;
+    const sync = () => $('#provs', f).setAttribute('aria-disabled', String(!ready()));
+    sync();
     f.addEventListener('change', sync);
     $$('[data-p]', f).forEach((b) => {
       b.addEventListener('mouseenter', () => { $('#pnote', f).textContent = CATALOG.providers.find((p) => p.id === b.dataset.p).note; });
-      b.addEventListener('click', () => {
+      b.addEventListener('click', (e) => {
+        if (!ready()) { e.preventDefault(); toast('먼저 두 가지 확인란에 체크하세요.', true); return; }
         const prov = CATALOG.providers.find((p) => p.id === b.dataset.p);
         const text = f.what.value === 'all' && getMd() ? getMd() : k.production_prompt;
         copyText(text).then((ok) => toast(ok ? `${prov.name}에 붙여넣을 내용을 복사했습니다.` : '복사에 실패했습니다. 지시문을 직접 선택해 복사하세요.', !ok));
-        window.open(prov.url, '_blank', 'noopener,noreferrer'); // 사용자 클릭 안에서 바로 연다(팝업 차단 방지)
+        // 링크 자체가 새 탭으로 공식 사이트를 연다(팝업 차단·액자 제한 회피)
         api('POST', '/api/external-handoffs', { final_package_id: fp.id, provider: prov.id, method: 'open', rights_ack: { rights: true, sensitive: true, visibility: f.vis.value } }).catch(() => {});
         $('#pnote', f).textContent = prov.note;
       });
@@ -832,7 +865,7 @@ async function renderSkills(el) {
     $('#sk-title', el).textContent = `공구 편집 — v${s.version} → v${s.version + 1}`;
     form.name.focus();
   }));
-  $$('[data-del]', el).forEach((b) => b.addEventListener('click', async () => { if (confirm('공구를 삭제할까요? (출고된 패키지에는 영향 없음)')) { await api('DELETE', `/api/custom-skills/${b.dataset.del}`); route(); } }));
+  $$('[data-del]', el).forEach((b) => b.addEventListener('click', async () => { if (await confirmBox('공구를 삭제할까요?', '이미 출고된 패키지에는 영향이 없습니다.')) { await api('DELETE', `/api/custom-skills/${b.dataset.del}`); route(); } }));
   $$('[data-test]', el).forEach((b) => b.addEventListener('click', async () => {
     const options = [];
     for (const p of projects.filter((x) => x.counts.prototypes)) {

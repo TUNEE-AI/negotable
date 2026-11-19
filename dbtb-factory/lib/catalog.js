@@ -92,7 +92,7 @@ export const LABS = {
 };
 
 export const LAB_LIMITS = {
-  maxUserTurns: Number(process.env.LAB_MAX_USER_TURNS || 12),
+  maxUserTurns: Number((typeof process !== 'undefined' && process.env.LAB_MAX_USER_TURNS) || 12),
   maxHistoryMessages: 40, // 컨텍스트 상한(최근 메시지만 모델에 전달)
 };
 

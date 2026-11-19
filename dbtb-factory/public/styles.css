@@ -317,6 +317,7 @@ textarea { min-height: 96px; resize: vertical; }
 .crate h3 { margin: 4px 0; }
 pre.prompt { white-space: pre-wrap; word-break: break-word; background: #1f1e1c; color: #e8e2d6; padding: 14px; border-radius: 8px; font-family: var(--font-mono); font-size: .84rem; max-height: 420px; overflow: auto; }
 .md { white-space: pre-wrap; word-break: break-word; background: #fff; padding: 16px; border: 1px solid var(--stone-2); border-radius: 8px; max-height: 520px; overflow: auto; font-size: .92rem; }
+.providers[aria-disabled=true] .btn { opacity: .45; }
 .providers { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
 
 /* ── 모달·토스트 ── */
