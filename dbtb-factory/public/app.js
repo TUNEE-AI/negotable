@@ -173,6 +173,8 @@ function shell(app, project, room, render) {
       <span class="engine-badge ${engine === 'demo' ? 'demo' : ''}" title="${engine === 'demo' ? 'AI 키가 설정되지 않아 데모 엔진으로 동작합니다' : 'AI 엔진 연결됨'}">${engine === 'demo' ? 'DEMO ENGINE' : 'AI ENGINE'}</span>
       <nav aria-label="공장 메뉴">
         ${navLink('#/projects', '프로젝트', 'projects')}
+        <a href="#" data-act="tools" ${room === 'tools' ? 'aria-current="page"' : ''}>P3 가공설비실</a>
+        <a href="#" data-act="lab" ${room === 'lab' ? 'aria-current="page"' : ''}>P4 실험실</a>
         ${navLink('#/warehouse', 'P8 완제품 창고', 'warehouse')}
         ${navLink('#/skills', 'P9 나의 공구실', 'skills')}
         <button type="button" data-act="settings" aria-label="소리·모션 설정">⚙︎</button>
@@ -187,6 +189,18 @@ function shell(app, project, room, render) {
       <main id="main" class="room" tabindex="-1"></main>
     </div>`;
   $('[data-act=settings]', app).addEventListener('click', openSettings);
+  if (project) ls.set('dbtb-last-project', project.id);
+  // 상단 메뉴의 가공설비실·실험실: 지금 프로젝트 → 최근 프로젝트 → 없으면 새 프로젝트 안내
+  $$('[data-act=tools],[data-act=lab]', app).forEach((a) => a.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const roomKey = a.dataset.act;
+    if (project) return go(`#/p/${project.id}/${roomKey}`);
+    const list = await api('GET', '/api/projects').catch(() => []);
+    const last = list.find((p) => p.id === ls.get('dbtb-last-project')) || list[0];
+    if (last) return go(`#/p/${last.id}/${roomKey}`);
+    toast('먼저 프로젝트를 하나 만드세요. 이름과 목표만 있으면 됩니다.');
+    go('#/projects');
+  }));
   const main = $('#main', app);
   if (!project) main.style.margin = '0 auto';
   return render(main);
